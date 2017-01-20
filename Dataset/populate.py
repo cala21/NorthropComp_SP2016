@@ -46,8 +46,8 @@ for rawFP, labelFP in zip(Raw,Labeled):
     if not p:
         p = -1
 
-    rawRaw = MySQLdb.escape_string(open("./FinalRawData/" + rawFP, "rb").read())
-    rawLabel = MySQLdb.escape_string(open("./FinalLabeledData/" + labelFP, "rb").read())
+    rawRaw = open("./FinalRawData/" + rawFP, "rb").read()
+    rawLabel = open("./FinalLabeledData/" + labelFP, "rb").read()
     #rawRaw = MySQLdb.escape_string(str(base64.encodestring(open("./FinalRawData/" + rawFP, "rb").read())))
     #rawLabel = MySQLdb.escape_string(str(base64.encodestring(open("./FinalLabeledData/" + labelFP, "rb").read())))
     #vals = INSERT_INTO + "({},{},{},{},{},{})".format(id,rawRaw, rawLabel , date, None, p)
