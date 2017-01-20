@@ -5,7 +5,14 @@ import datetime
 import MySQLdb
 import MySQLdb.cursors as cursors
 import numpy
-import binascii
+
+def getPixels(listOfImages):
+    toRet = []
+    for image in listOfImages:
+        for row in image:
+            for col in image:
+                toRet.append(col)
+    return numpy.array(toRet)
 
 
 class DatabaseProxy:
@@ -25,7 +32,7 @@ class DatabaseProxy:
     @return testData, testLabels, trainingData, trainingLabels
 
     """
-    def getTestAndTrainingData(self, trainingSize=.75, testSize=.25,returnAsImage=False):
+    def getTestAndTrainingData(self, trainingSize=.75, testSize=.25,returnAsImage=False, flatten=False):
         cursor = self.db.cursor()
         numrows = cursor.execute("SELECT PixelData, PixelLabels FROM goes_data ORDER BY RAND()") #randomly select all of the images to then put into traingin or test sets
 
@@ -53,6 +60,14 @@ class DatabaseProxy:
         testLabels = [ i[1] for i in data[:splitSize] ]
         trainingData = [ i[0] for i in data[splitSize:] ]
         trainingLabels = [ i[1] for i in data[splitSize:] ]
+
+
+        if flatten and not returnAsImage:
+            testData = getPixels(testData)
+            testLabels = getPixels(testLabels)
+            trainingData = getPixels(trainingData)
+            trainingLabels = getPixels(trainingLabels)
+
         return testData, testLabels, trainingData, trainingLabels
 
 
