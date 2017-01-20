@@ -7,12 +7,8 @@ import MySQLdb.cursors as cursors
 import numpy
 
 def getPixels(listOfImages):
-    toRet = []
-    for image in listOfImages:
-        for row in image:
-            for col in image:
-                toRet.append(col)
-    return numpy.array(toRet)
+    toRet = numpy.array([i for sublist in listOfImages for item in sublist for i in item])
+    return toRet.astype(int)
 
 
 class DatabaseProxy:
@@ -30,6 +26,7 @@ class DatabaseProxy:
 
     Labels are returned in two 3d numpy array
     @return testData, testLabels, trainingData, trainingLabels
+
 
     """
     def getTestAndTrainingData(self, trainingSize=.75, testSize=.25,returnAsImage=False, flatten=False):
