@@ -1,6 +1,7 @@
 import tensorflow as tf
 from random import choice, shuffle
 from numpy import array
+from utils.databaseProxy import DatabaseProxy
  
  
 def TFKMeansCluster(vectors, noofclusters):
@@ -138,3 +139,12 @@ def TFKMeansCluster(vectors, noofclusters):
         centroids = sess.run(centroids)
         assignments = sess.run(assignments)
         return centroids, assignments
+
+def main():
+    dbproxy = DatabaseProxy()
+    testData, testLabels, trainingData, trainingLabels = dbproxy.getTestAndTrainingData(flatten=True)
+    
+
+
+if __name__ == '__main__':
+    main()
