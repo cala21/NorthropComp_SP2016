@@ -8,7 +8,7 @@ img = cv2.imread('images/rgb_central.jpg')
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 # Need to explore more thresholding
-(T, thresh) = cv2.threshold(gray, 130, 255, cv2.THRESH_BINARY)
+(T, thresh) = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY)
 # (T, thresh) = cv2.threshold(gray, 130, 255, cv2.THRESH_TOZERO)
 
 # Initial erode to remove lines and small noise
@@ -32,10 +32,10 @@ final = cv2.add(lines,img)
 
 cv2.imshow('rgb',img)
 #cv2.imshow('grey',gray)
-#cv2.imshow('thesh',thresh)
-#cv2.imshow('morphilogical',erosion)
-#cv2.imshow('morphilogical2',dilation)
-#cv2.imshow('diff',cv2.cvtColor(diff,cv2.COLOR_GRAY2RGB))
+cv2.imshow('thesh',thresh)
+cv2.imshow('morphilogical',erosion)
+cv2.imshow('morphilogical2',dilation)
+cv2.imshow('diff',cv2.cvtColor(diff,cv2.COLOR_GRAY2RGB))
 cv2.imshow('final',final)
 
 cv2.waitKey(0)
