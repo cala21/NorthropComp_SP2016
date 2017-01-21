@@ -14,7 +14,6 @@ class TestDatabaseProxy(unittest.TestCase):
         testData, testLabels, trainingData, trainingLabels = dbproxy.getTestAndTrainingData()
         self.assertEqual(len(testData), len(testLabels))
         self.assertEqual(len(trainingData), len(trainingLabels))
-        print(len(trainingData), len(testData))
         self.assertTrue(len(trainingData) > len(testData))
 
 #testing sizes
@@ -35,7 +34,6 @@ class TestDatabaseProxy(unittest.TestCase):
         testData, testLabels, trainingData, trainingLabels = dbproxy.getTestAndTrainingData(flatten=True)
         self.assertEqual(len(testData), len(testLabels))
         self.assertEqual(len(trainingData), len(trainingLabels))
-        print(len(trainingData), len(testData))
         self.assertTrue(len(trainingData) > len(testData))
 
 if __name__ == '__main__':

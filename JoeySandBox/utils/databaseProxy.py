@@ -62,8 +62,10 @@ class DatabaseProxy:
         if flatten and not returnAsImage:
             testData = getPixels(testData)
             testLabels = getPixels(testLabels)
+            testLabels[testLabels == 255] = 5
             trainingData = getPixels(trainingData)
             trainingLabels = getPixels(trainingLabels)
+            trainingLabels[trainingLabels == 255] = 5
 
         return testData, testLabels, trainingData, trainingLabels
 
