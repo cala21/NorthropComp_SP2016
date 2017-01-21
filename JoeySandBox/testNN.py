@@ -15,22 +15,20 @@ testData, testLabels, trainingData, trainingLabels = dbproxy.getTestAndTrainingD
 # Specify that all features have real-value data
 feature_columns = [tf.contrib.layers.real_valued_column("", dimension=3)]
 
+tf.logging.set_verbosity(tf.logging.ERROR)
+
 # Build 3 layer DNN with 10, 20, 10 units respectively.
 classifier = tf.contrib.learn.DNNClassifier(feature_columns=feature_columns,
                                             hidden_units=[10, 20, 10],
                                             n_classes=6)
 
 # Fit model.
-classifier.fit(x=trainingData,
-               y=trainingLabels,
-               steps=10)
+classifier.fit(x=trainingData[:len(trainingData/2)], y=trainingLabels[:len(trainingData/2)], steps=10)
 
 # Evaluate accuracy.
 print("hi")
-accuracy_score = classifier.evaluate(x=testData,
-                                     y=testLabels)["accuracy"]
+accuracy_score = classifier.evaluate(x=testData, y=testLabels)["accuracy"]
 print('Accuracy: {0:f}'.format(accuracy_score))
-input()
 
 # Classify two new flower samples.
 #new_samples = np.array(

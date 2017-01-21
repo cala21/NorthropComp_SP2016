@@ -44,7 +44,7 @@ def TFKMeansCluster(vectors, noofclusters):
                      for i in range(noofclusters)]
         ##These nodes will assign the centroid Variables the appropriate
         ##values
-        centroid_value = tf.placeholder("float64", [dim])
+        centroid_value = tf.placeholder("int64", [dim])
         cent_assigns = []
         for centroid in centroids:
             cent_assigns.append(tf.assign(centroid, centroid_value))
@@ -143,6 +143,8 @@ def TFKMeansCluster(vectors, noofclusters):
 def main():
     dbproxy = DatabaseProxy()
     testData, testLabels, trainingData, trainingLabels = dbproxy.getTestAndTrainingData(flatten=True)
+
+    print(TFKMeansCluster(trainingData, 6))
     
 
 
