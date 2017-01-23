@@ -1,7 +1,14 @@
 import tensorflow as tf
+import operator
+import code
+from collections import defaultdict
 from random import choice, shuffle
 from numpy import array
 from utils.databaseProxy import DatabaseProxy
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+
  
  
 def TFKMeansCluster(vectors, noofclusters):
@@ -86,7 +93,8 @@ def TFKMeansCluster(vectors, noofclusters):
         ##to the graph. The Variable-initializer should be defined after
         ##all the Variables have been constructed, so that each of them
         ##will be included in the initialization.
-        init_op = tf.initialize_all_variables()
+        #init_op = tf.initialize_all_variables()
+        init_op = tf.global_variables_initializer()
  
         #Initialize all variables
         sess.run(init_op)
@@ -141,12 +149,34 @@ def TFKMeansCluster(vectors, noofclusters):
         return centroids, assignments
 
 def main():
+
+    NUMSAMPLES = 1000
+
     dbproxy = DatabaseProxy()
     testData, testLabels, trainingData, trainingLabels = dbproxy.getTestAndTrainingData(flatten=True)
 
-    print(TFKMeansCluster(trainingData, 6))
-    
+    cent, assignments = TFKMeansCluster(trainingData[:NUMSAMPLES], 6)
 
 
+#KMEANS RESULTS
+    kFig = plt.figure()
+    kAx = kFig.add_subplot(111, projection='3d')
+    kAx.scatter(trainingData[:NUMSAMPLES,0], trainingData[:NUMSAMPLES,1], trainingData[:NUMSAMPLES,2], c=assignments)
+    kAx.set_xlabel('X')
+    kAx.set_ylabel('Y')
+    kAx.set_zlabel('Z')
+    kAx.set_title("KMEANS")
+#REAL RESULTS
+    rFig = plt.figure()
+    rAx = rFig.add_subplot(111, projection='3d')
+    rAx.scatter(trainingData[:NUMSAMPLES,0], trainingData[:NUMSAMPLES,1], trainingData[:NUMSAMPLES,2], c=trainingLabels[:NUMSAMPLES])
+    rAx.set_xlabel('X')
+    rAx.set_ylabel('Y')
+    rAx.set_zlabel('Z')
+    rAx.set_title("REAL")
+
+
+    plt.show()
 if __name__ == '__main__':
     main()
+

@@ -5,10 +5,17 @@ import datetime
 import MySQLdb
 import MySQLdb.cursors as cursors
 import numpy
+import random
 
 def getPixels(listOfImages):
     toRet = numpy.array([i for sublist in listOfImages for item in sublist for i in item])
     return toRet.astype(int)
+
+def shuffle(a,b):
+    temp = [ [i[0],i[1]] for i in zip(a,b)]
+    random.shuffle(temp)
+    a = [i[0] for i in temp]
+    b = [i[1] for i in temp]
 
 
 class DatabaseProxy:
@@ -66,6 +73,9 @@ class DatabaseProxy:
             trainingData = getPixels(trainingData)
             trainingLabels = getPixels(trainingLabels)
             trainingLabels[trainingLabels == 255] = 5
+
+        shuffle(testData,testLabels)
+        shuffle(trainingData, trainingLabels)
 
         return testData, testLabels, trainingData, trainingLabels
 
