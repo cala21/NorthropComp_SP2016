@@ -25,9 +25,15 @@ feature_columns = [tf.contrib.layers.real_valued_column("", dimension=4)]
 # Build 3 layer DNN with 10, 20, 10 units respectively.
 classifier = tf.contrib.learn.DNNClassifier(feature_columns=feature_columns,
                                                     hidden_units=[10, 20, 10],
-                                                                                                n_classes=3,
-                                                                                                                                            model_dir="/tmp/iris_model")
+                                                    n_classes=3,
+                                                    model_dir="/tmp/iris_model") 
 
+print("\n\n")
+print(training_set.data.shape)                                                                                                                                            
+print(training_set.target.shape)                                                                                                                                    
+print(test_set.data.shape)                                                                                                                                          
+print(test_set.target.shape)                                
+print("\n\n")
 # Fit model.
 #tf.contrib.learn.SKCompat(tf.contrib.learn.DNNClassifier(feature_columns=feature_columns,hidden_units=[10,20,10]).fit(x=training_set.data,y=training_set.target,steps=2000))
 classifier.fit(x=training_set.data,
