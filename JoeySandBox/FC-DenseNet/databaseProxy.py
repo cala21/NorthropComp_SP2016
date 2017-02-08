@@ -4,9 +4,11 @@ from itertools import chain
 import datetime
 import MySQLdb
 import MySQLdb.cursors as cursors
-import numpy as np
+import numpy
 import random
 from valIter import valIter 
+import code
+
 def getPixels(listOfImages):
     toRet = numpy.array([i for sublist in listOfImages for item in sublist for i in item])
     return toRet.astype(int)
@@ -20,7 +22,7 @@ def shuffle(a,b):
 
 class DatabaseProxy:
     def __init__(self):
-        self.db = MySQLdb.connect("localhost", "root", "", "goes")
+        self.db = MySQLdb.connect("localhost", "root", "password", "goes")
 
     """
     Images are returned in two 4d numpy array [i][j][k][l],  test and training
@@ -82,9 +84,10 @@ class DatabaseProxy:
 
     def getIterators(self, batches=10):
         cursor = self.db.cursor()
-        numrows = cursor.execute("SELECT PixelData, PixelLabels FROM goes_data ORDER BY RAND()") #randomly select all of the images to then put into traingin or test sets
-
+        numrows = cursor.execute("SELECT PixelData, PixelLabels FROM goes_data ORDER BY RAND() ") #randomly select all of the images to then put into traingin or test sets
+        print(numrows)
         data = list([row[0], row[1]]  for row in cursor.fetchall() )
+
         #data = numpy.fromiter(cursor.fetchall(), count=numrows dtype=dt)
         for i, raw in enumerate(data):
             img = raw[0]
@@ -99,17 +102,19 @@ class DatabaseProxy:
             data[i][0] = numpy.asarray(image)
             data[i][1] = numpy.asarray(labels)
 
-        splitSize = int(numrows*.75)
-        testData = [ i[0] for i in data[:splitSize] ]
-        testLabels = [ i[1] for i in data[:splitSize] ]
-        trainingData = [ i[0] for i in data[splitSize:] ]
-        trainingLabels = [ i[1] for i in data[splitSize:] ]
         
-        
-        testLabels[testLabels[:,] == 255] = 5
-        trainingLabels[trainingLabels[:,] == 255] = 5
+        splitSize = int(numrows*.5)
+        testData = numpy.array([ i[0] for i in data[:splitSize] ])
+        testLabels = numpy.array([ i[1] for i in data[:splitSize] ])
+        trainingData = numpy.array([ i[0] for i in data[splitSize:] ])
+        trainingLabels = numpy.array([ i[1] for i in data[splitSize:] ])
 
-        return valIter(np.array_split(testData, batches), np.array_split(testLabels, batches), batches), valIter(np.array_split(trainingData, batches), np.array_split(trainingLabels, batches), batches), valIter(np.array_split(trainingData, batches), np.array_split(trainingLabels, batches), batches)
+        testData = testData.transpose((0,3,1,2))
+
+        trainingData = trainingData.transpose((0,3,1,2))
+
+
+        return valIter(numpy.array_split(testData, batches), numpy.array_split(testLabels, batches), batches), valIter(numpy.array_split(trainingData, batches), numpy.array_split(trainingLabels, batches), batches), valIter(numpy.array_split(trainingData, batches), numpy.array_split(trainingLabels, batches), batches)
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.db.close()
