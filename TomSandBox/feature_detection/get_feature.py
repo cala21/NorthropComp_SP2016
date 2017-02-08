@@ -3,10 +3,12 @@ import cv2
 
 # Load an color image and convert to grayscale
 #img = cv2.imread('images/rgb_colorado.jpg')
-img = cv2.imread('images/rgb_central.jpg')
+img = cv2.imread('GOES12452016029pJxqq0-A.jpg')
 #img = cv2.imread('images/rgb_northwest.jpg')
-gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
+#gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+gray = img
+cv2.imshow('rgb',img)
+"""
 # Need to explore more thresholding
 (T, thresh) = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY)
 # (T, thresh) = cv2.threshold(gray, 130, 255, cv2.THRESH_TOZERO)
@@ -37,6 +39,6 @@ cv2.imshow('morphilogical',erosion)
 cv2.imshow('morphilogical2',dilation)
 cv2.imshow('diff',cv2.cvtColor(diff,cv2.COLOR_GRAY2RGB))
 cv2.imshow('final',final)
-
+"""
 cv2.waitKey(0)
 cv2.destroyAllWindows()

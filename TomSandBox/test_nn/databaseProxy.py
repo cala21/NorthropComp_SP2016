@@ -31,7 +31,8 @@ class DatabaseProxy:
     """
     def getTestAndTrainingData(self, trainingSize=.75, testSize=.25,returnAsImage=False, flatten=False):
         cursor = self.db.cursor()
-        numrows = cursor.execute("SELECT PixelData, PixelLabels FROM goes_data ORDER BY RAND()") #randomly select all of the images to then put into traingin or test sets
+        #numrows = cursor.execute("SELECT PixelData, PixelLabels FROM goes_data ORDER BY RAND()") #randomly select all of the images to then put into traingin or test sets
+        numrows = cursor.execute("SELECT PixelData, PixelLabels FROM goes_data") #randomly select all of the images to then put into traingin or test sets
 
         data = list([row[0], row[1]]  for row in cursor.fetchall() )
         #data = numpy.fromiter(cursor.fetchall(), count=numrows dtype=dt)
@@ -62,10 +63,18 @@ class DatabaseProxy:
         if flatten and not returnAsImage:
             testData = getPixels(testData)
             testLabels = getPixels(testLabels)
-            testLabels[testLabels == 255] = 5
+            testLabels[testLabels == 255] = 0
+            testLabels[testLabels == 1] = 0
+            testLabels[testLabels == 2] = 1
+            testLabels[testLabels == 3] = 2
+            testLabels[testLabels == 4] = 3
             trainingData = getPixels(trainingData)
             trainingLabels = getPixels(trainingLabels)
-            trainingLabels[trainingLabels == 255] = 5
+            trainingLabels[trainingLabels == 255] = 0
+            trainingLabels[trainingLabels == 1] = 0
+            trainingLabels[trainingLabels == 2] = 1
+            trainingLabels[trainingLabels == 3] = 2
+            trainingLabels[trainingLabels == 4] = 3
 
         return testData, testLabels, trainingData, trainingLabels
 
