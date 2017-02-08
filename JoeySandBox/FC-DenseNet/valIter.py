@@ -8,7 +8,8 @@ class valIter:
         self.data = data
         self.labels = labels
         self.curr = 0
-        self.batches = numBatches
+        self.batches = numBatches-1
+        self.shape = (numBatches,len(data[0]), len(data[0][0]))
     
     def __iter__(self):
         return self
@@ -18,9 +19,7 @@ class valIter:
             curr = self.curr
             self.curr += 1
             return self.data[curr], self.labels[curr]
-        else:   
-            raise StopIteration()
-
+        return None
     def get_n_classes(self):
         return 6
     def get_n_samples(self):

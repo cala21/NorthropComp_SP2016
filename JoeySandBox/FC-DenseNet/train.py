@@ -27,29 +27,31 @@ def batch_loop(iterator, f, epoch, phase, history):
     n_imgs = 0.
 
     for i in range(n_batches):
-        X, Y = iterator.next()
-        batch_size = X.shape[0]
-        n_imgs += batch_size
+        if iterator != None:
+            X, Y = iterator.next()
+            if X != None:
+                batch_size = X.shape[0]
+                n_imgs += batch_size
+            
+                loss, I, U, acc = f(X, Y[:, None, :, :])
+                if i == 0:
+                    loss_tot = loss * batch_size
+                    I_tot = I
+                    U_tot = U
+                    acc_tot = acc * batch_size
+                else:
+                    loss_tot += loss * batch_size
+                    I_tot += I
+                    U_tot += U
+                    acc_tot += acc * batch_size
 
-        loss, I, U, acc = f(X, Y[:, None, :, :])
-        if i == 0:
-            loss_tot = loss * batch_size
-            I_tot = I
-            U_tot = U
-            acc_tot = acc * batch_size
-        else:
-            loss_tot += loss * batch_size
-            I_tot += I
-            U_tot += U
-            acc_tot += acc * batch_size
-
-        # # Progression bar ( < 74 characters)
+            # # Progression bar ( < 74 characters)
         sys.stdout.write('\rEpoch {} : [{} : {}%]'.format(epoch, phase, int(100. * (i + 1) / n_batches)))
         sys.stdout.flush()
-
-    history[phase]['loss'].append(loss_tot / n_imgs)
-    history[phase]['jaccard'].append(np.mean(I_tot / U_tot))
-    history[phase]['accuracy'].append(acc_tot / n_imgs)
+    if iterator != None:
+        history[phase]['loss'].append(loss_tot / n_imgs)
+        history[phase]['jaccard'].append(np.mean(I_tot / U_tot))
+        history[phase]['accuracy'].append(acc_tot / n_imgs)
 
     return history
 

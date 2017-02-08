@@ -5,10 +5,10 @@ import time
 import theano
 from lasagne.layers import get_output
 
-from data_loader import load_data
+from databaseProxy import DatabaseProxy
 from  metrics import numpy_metrics, theano_metrics
 
-
+db = DatabaseProxy()
 def test(config_path, weight_path):
     """
     This function builds the model defined in config_path and restores the weights defined in weight_path. It then
@@ -27,10 +27,10 @@ def test(config_path, weight_path):
     # Load data
     print('Loading data')
     batch_size = 10
-    _, _, iterator = load_data(cf.dataset, batch_size=batch_size)
+    _, _, iterator = db.getIterators()
 
     n_classes = iterator.get_n_classes()
-    _, n_rows, n_cols = iterator.data_shape
+    _, n_rows, n_cols = iterator.shape
     void_labels = iterator.get_void_labels()
 
     ###################
@@ -71,13 +71,13 @@ def test(config_path, weight_path):
         sys.stdout.write('\r[{}%]'.format(int(100. * (i + 1) / n_batches)))
         sys.stdout.flush()
 
-    labels = ['sky', 'building', 'column_pole', 'road', 'sidewalk', 'tree', 'sign', 'fence', 'car', 'pedestrian',
-              'byciclist']
+    labels = ['background', 'space', 'water', 'low cloud', 'high cloud', 'ignore']
+	#['sky', 'building', 'column_pole', 'road', 'sidewalk', 'tree', 'sign', 'fence', 'car', 'pedestrian',              'byciclist']
 
     for label, jacc in zip(labels, I_tot / U_tot):
         print('{} :\t{:.4f}'.format(label, jacc))
-    print 'Mean Jaccard', np.mean(I_tot / U_tot)
-    print 'Global accuracy', acc_tot / n_imgs
+    print( 'Mean Jaccard', np.mean(I_tot / U_tot))
+    print('Global accuracy', acc_tot / n_imgs)
 
     # To visualize an image : np.reshape(np.argmax(g(X), axis = 1), (360, 480))
     # with g = theano.function([net.input_var], prediction)
@@ -85,5 +85,5 @@ def test(config_path, weight_path):
 
 if __name__ == '__main__':
     config_path = 'config/FC-DenseNet103.py'
-    weight_path = 'weights/FC-DenseNet103_weights.npz'
+    weight_path = 'TEST/model.npz'
     test(config_path, weight_path)

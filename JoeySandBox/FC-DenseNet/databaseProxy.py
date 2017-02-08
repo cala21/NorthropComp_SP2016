@@ -82,9 +82,9 @@ class DatabaseProxy:
         return testData, testLabels, trainingData, trainingLabels
 
 
-    def getIterators(self, batches=15):
+    def getIterators(self, batches=10):
         cursor = self.db.cursor()
-        numrows = cursor.execute("SELECT PixelData, PixelLabels FROM goes_data HAVING RAND() > 0.75") #randomly select all of the images to then put into traingin or test sets
+        numrows = cursor.execute("SELECT PixelData, PixelLabels FROM goes_data ORDER BY RAND() ") #randomly select all of the images to then put into traingin or test sets
         print(numrows)
         data = list([row[0], row[1]]  for row in cursor.fetchall() )
 

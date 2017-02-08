@@ -124,7 +124,7 @@ class Network():
 
     def restore(self, path):
         """ Load the weights """
-
+        print(path)
         with np.load(path) as f:
             saved_params_values = [f['arr_%d' % i] for i in range(len(f.files))]
         set_all_param_values(self.output_layer, saved_params_values)
