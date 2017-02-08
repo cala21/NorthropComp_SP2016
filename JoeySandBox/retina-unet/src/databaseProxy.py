@@ -66,9 +66,9 @@ class DatabaseProxy:
 
 
     """
-    def getTestAndTrainingData(self, trainingSize=.75, testSize=.25, returnAsImage=False, flatten=False, batches=1, dim=3):
+    def getTestAndTrainingData(self, trainingSize=.8, testSize=.2, returnAsImage=False, flatten=False, batches=10, dim=3):
         cursor = self.db.cursor()
-        numrows = cursor.execute("SELECT PixelData, PixelLabels FROM goes_data WHERE  RAND() > .25") #randomly select all of the images to then put into traingin or test sets
+        numrows = cursor.execute("SELECT PixelData, PixelLabels FROM goes_data ORDER BY RAND() LIMIT 88") #randomly select all of the images to then put into traingin or test sets
         data = list([row[0], row[1]]  for row in cursor.fetchall() )
         #data = numpy.fromiter(cursor.fetchall(), count=numrows dtype=dt)
         wrapper = lambda x: [x]
@@ -84,7 +84,14 @@ class DatabaseProxy:
 
             data[i][0] = numpy.asarray(image).tolist()
             t = numpy.asarray(labelsi).copy()
-            t[t == 255] = 5
+        
+            t[t == 2] = 0
+            t[t == 1] = 0
+            t[t == 3] = 1
+            t[t == 4] = 2
+            t[t == 255] = 3
+
+
             t = wrapper(t)
             
             data[i][1] = t

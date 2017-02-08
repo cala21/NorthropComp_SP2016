@@ -65,7 +65,7 @@ def masks_Unet(masks):
     im_h = masks.shape[2]
     im_w = masks.shape[3]
     masks = np.reshape(masks,(masks.shape[0],im_h*im_w))
-    new_masks = np.empty((masks.shape[0],im_h*im_w,6))
+    new_masks = np.empty((masks.shape[0],im_h*im_w,4))
     labels = np.unique(masks)
     labelsP = to_categorical(labels)
     l = {}

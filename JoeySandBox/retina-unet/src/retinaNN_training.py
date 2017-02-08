@@ -56,8 +56,8 @@ def get_unet(n_ch,patch_height,patch_width):
     conv5 = Dropout(0.2)(conv5)
     conv5 = Convolution2D(32, 3, 3, activation='relu', border_mode='same')(conv5)
     #
-    conv6 = Convolution2D(6, 1, 1, activation='relu',border_mode='same')(conv5)
-    conv6 = core.Reshape((6,patch_height*patch_width))(conv6)
+    conv6 = Convolution2D(4, 1, 1, activation='relu',border_mode='same')(conv5)
+    conv6 = core.Reshape((4,patch_height*patch_width))(conv6)
     conv6 = core.Permute((2,1))(conv6)
     ############
     conv7 = core.Activation('softmax')(conv6)
@@ -94,8 +94,8 @@ def get_1d(n_ch,patch_height,patch_width):
     conv5 = Dropout(0.2)(conv5)
     conv5 = Convolution1D(32, 3, activation='relu', border_mode='same')(conv5)
     #
-    conv6 = Convolution1D(6, 1, activation='relu',border_mode='same')(conv5)
-    conv6 = core.Reshape((6,patch_height*patch_width))(conv6)
+    conv6 = Convolution1D(4, 1, activation='relu',border_mode='same')(conv5)
+    conv6 = core.Reshape((4,patch_height*patch_width))(conv6)
     conv6 = core.Permute((2,1))(conv6)
     ############
     conv7 = core.Activation('softmax')(conv6)
@@ -155,8 +155,8 @@ def get_gnet(n_ch,patch_height,patch_width):
     conv9 = Dropout(0.2)(conv9)
     conv9 = Convolution2D(32, 3, 3, activation='relu', border_mode='same')(conv9)
     #
-    conv10 = Convolution2D(6, 1, 1, activation='relu',border_mode='same')(conv9)
-    conv10 = core.Reshape((6,patch_height*patch_width))(conv10)
+    conv10 = Convolution2D(3, 1, 1, activation='relu',border_mode='same')(conv9)
+    conv10 = core.Reshape((3,patch_height*patch_width))(conv10)
     conv10 = core.Permute((2,1))(conv10)
     ############
     conv10 = core.Activation('softmax')(conv10)
@@ -203,7 +203,7 @@ N_sample = min(patches_imgs_train.shape[0],40)
 n_ch = patches_imgs_train.shape[1]
 patch_height = patches_imgs_train.shape[2]
 patch_width = patches_imgs_train.shape[3]
-model = get_gnet(n_ch, patch_height, patch_width)  #the U-net model
+model = get_unet(n_ch, patch_height, patch_width)  #the U-net model
 print("Check: final output of the network:")
 print(model.output_shape)
 plot(model, to_file='./'+name_experiment+'/'+name_experiment + '_model.png')   #check how the model looks like

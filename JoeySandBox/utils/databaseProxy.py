@@ -4,9 +4,9 @@ from itertools import chain
 import datetime
 import MySQLdb
 import MySQLdb.cursors as cursors
-import numpy
+import numpy as np
 import random
-
+from valIter import valIter 
 def getPixels(listOfImages):
     toRet = numpy.array([i for sublist in listOfImages for item in sublist for i in item])
     return toRet.astype(int)
@@ -79,6 +79,37 @@ class DatabaseProxy:
 
         return testData, testLabels, trainingData, trainingLabels
 
+
+    def getIterators(self, batches=10):
+        cursor = self.db.cursor()
+        numrows = cursor.execute("SELECT PixelData, PixelLabels FROM goes_data ORDER BY RAND()") #randomly select all of the images to then put into traingin or test sets
+
+        data = list([row[0], row[1]]  for row in cursor.fetchall() )
+        #data = numpy.fromiter(cursor.fetchall(), count=numrows dtype=dt)
+        for i, raw in enumerate(data):
+            img = raw[0]
+            label = raw[1]
+            
+            stream = BytesIO(img) 
+            image = Image.open(stream)           
+
+            stream1 = BytesIO(label)
+            labels = Image.open(stream1)
+
+            data[i][0] = numpy.asarray(image)
+            data[i][1] = numpy.asarray(labels)
+
+        splitSize = int(numrows*.75)
+        testData = [ i[0] for i in data[:splitSize] ]
+        testLabels = [ i[1] for i in data[:splitSize] ]
+        trainingData = [ i[0] for i in data[splitSize:] ]
+        trainingLabels = [ i[1] for i in data[splitSize:] ]
+        
+        
+        testLabels[testLabels[:,] == 255] = 5
+        trainingLabels[trainingLabels[:,] == 255] = 5
+
+        return valIter(np.array_split(testData, batches), np.array_split(testLabels, batches), batches), valIter(np.array_split(trainingData, batches), np.array_split(trainingLabels, batches), batches), valIter(np.array_split(trainingData, batches), np.array_split(trainingLabels, batches), batches)
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.db.close()
