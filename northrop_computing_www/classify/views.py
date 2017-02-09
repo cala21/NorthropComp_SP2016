@@ -3,4 +3,4 @@ from django.http import HttpResponse
 # Create your views here.
 
 def index(request):
-    return HttpResponse("Future Site of Northrop Computing Web-Based Classifier")
+    return render(request,'classify/index.html',{ })
