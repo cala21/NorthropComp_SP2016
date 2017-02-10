@@ -8,9 +8,9 @@ from .forms import imageForm
 def index(request):
     if request.method == 'POST':
         form = imageForm(request.POST, request.FILES)
-        image_data = imageUpload.objects.all().latest('uploaded_at')
         if form.is_valid():
             form.save()
+            image_data = imageUpload.objects.all().latest('uploaded_at')
             return render(request, 'classify/index.html', {
                 'form': form,
                 'image_data' : image_data,
