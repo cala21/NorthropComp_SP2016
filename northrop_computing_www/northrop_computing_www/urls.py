@@ -22,4 +22,6 @@ urlpatterns = [
     url(r'^index/', views.index, name='index'),
     url(r'^classify/', include('classify.urls')),
     url(r'^admin/', admin.site.urls),
+    #url(r'^static/', 'django.views.static.serve', name='static'),
 ]
+# {'document_root': settings.STATIC_ROOT}),

@@ -216,11 +216,5 @@
 <div class="jumbotron text-center">
   <h1>Future Demo Site for Northrop Computing</h1>
   <p>This Demo will be unbelievable</p>
-</div>
-<div>
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Upload</button>
-  </form>
+  <img src="/static/northrop.jpg">
 </div>
