@@ -15,6 +15,9 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
+from django.conf import settings
+from django.conf.urls.static import static
+
 from . import views
 
 urlpatterns = [
@@ -23,5 +26,5 @@ urlpatterns = [
     url(r'^classify/', include('classify.urls')),
     url(r'^admin/', admin.site.urls),
     #url(r'^static/', 'django.views.static.serve', name='static'),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 # {'document_root': settings.STATIC_ROOT}),

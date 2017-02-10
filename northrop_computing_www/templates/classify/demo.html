@@ -218,13 +218,14 @@
   <p>This Demo will be unbelievable</p>
 </div>
 <div>
+<!  <img src='/static/northrop_computing_www/northrop.jpg'>
+  <img src='{{image_data.image.url}}' alt="data.url">
+</div>
+<div>
   <center><p>Directions: <br>upload an image to run our classifier</p></center>
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.as_p }}
     <button type="submit">Upload</button>
   </form>
-</div><br><br>
-<div>
-  <img src='{{image_data.image.url}}'>
 </div>

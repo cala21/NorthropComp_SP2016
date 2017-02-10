@@ -8,9 +8,14 @@ from .forms import imageForm
 def index(request):
     if request.method == 'POST':
         form = imageForm(request.POST, request.FILES)
+        image_data = imageUpload.objects.all().latest('uploaded_at')
         if form.is_valid():
             form.save()
-            return HttpResponseRedirect('/classify/demo')
+            return render(request, 'classify/index.html', {
+                'form': form,
+                'image_data' : image_data,
+            })
+            #return HttpResponseRedirect('/classify/demo')
     else:
         form = imageForm()
     return render(request, 'classify/index.html', {
@@ -18,9 +23,10 @@ def index(request):
     })
 
 def demo(request):
-    image_data = imageUpload.objects.all().latest('uploaded_at').image#latest('uploaded_at')
-    #print image_data
-    #html = '<img src="/media/documents/krHJs8F.jpg">'
-    return HttpResponse(image_data, content_type="image/jpg")
+    image_data = imageUpload.objects.all().latest('uploaded_at')
+    return render(request, 'classify/demo.html', {
+        'image_data': image_data
+    })
+    #return HttpResponse(image_data, content_type="image/jpg")
 
     #return render(request,'classify/index.html',{ })
