@@ -226,5 +226,7 @@
   </form>
 </div><br><br>
 <div>
-  <img src='{{image_data.image.url}}'>
+  {%if image_data %}
+  <center><img src='{{image_data.image.url}}' height="320"></center>
+  {% endif %}
 </div>
