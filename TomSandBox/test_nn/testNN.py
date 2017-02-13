@@ -24,15 +24,14 @@ feature_columns = [tf.contrib.layers.real_valued_column("", dimension=1)]
 tf.logging.set_verbosity(tf.logging.ERROR)
 
 print("Building Classifier...")
-# Build 3 layer DNN with 10, 20, 10 units respectively.
 classifier = tf.contrib.learn.DNNClassifier(feature_columns=feature_columns,
-                                            hidden_units=[6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6],
-                                            n_classes=6)
+                                            hidden_units=[100,100,100,100],
+                                            n_classes=4)
 print("Finished Building Classifier.")
 
 # Fit model.
 print("Fitting Model...")
-classifier.fit(x=trainingData[:len(trainingData)/100], y=trainingLabels[:len(trainingData)/100], steps=10)
+classifier.fit(x=trainingData[:len(trainingData)/1000], y=trainingLabels[:len(trainingData)/1000], steps=10000)
 print("Finished Fitting Model.")
 
 # Evaluate accuracy.
@@ -45,3 +44,8 @@ predictions = list(classifier.predict(testData, as_iterable=True))
 confusion = confusion_matrix(testLabels,predictions)
 print("Confusion matrix:")
 print(confusion)
+
+print("Building output file:")
+output_file = open('output.txt', 'w')
+for i in range(len(testLabels)):
+   output_file.write("{0}\t{1}\t{2}\n".format(testData[i],testLabels[i],predictions[i]))
