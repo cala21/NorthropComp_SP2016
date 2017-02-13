@@ -81,12 +81,12 @@ def masks_Unet(masks):
 
 def pred_to_imgs(pred,mode="original"):
     assert (len(pred.shape)==3)  #3D array: (Npatches,height*width,6)
-    assert (pred.shape[2]==6 )  #check the classes are 6
+    assert (pred.shape[2]==4 )  #check the classes are 6
     pred_images = np.empty((pred.shape[0],pred.shape[1]))  #(Npatches,height*width)
     if mode=="original":
         for i in range(pred.shape[0]):
             for pix in range(pred.shape[1]):
-                pred_images[i,pix]=pred[i,pix,1]
+                pred_images[i,pix]=pred[i,pix].argmax()
     elif mode=="threshold":
         for i in range(pred.shape[0]):
             for pix in range(pred.shape[1]):

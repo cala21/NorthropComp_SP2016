@@ -60,12 +60,12 @@ def get_unet(n_ch,patch_height,patch_width):
     conv6 = core.Reshape((4,patch_height*patch_width))(conv6)
     conv6 = core.Permute((2,1))(conv6)
     ############
-    conv7 = core.Activation('softmax')(conv6)
+    conv7 = core.Activation('softplus')(conv6)
 
     model = Model(input=inputs, output=conv7)
 
-    # sgd = SGD(lr=0.01, decay=1e-6, momentum=0.3, nesterov=False)
-    model.compile(optimizer='sgd', loss='categorical_crossentropy',metrics=['accuracy'])
+    #sgd = SGD(lr=0.01, decay=1e-6, momentum=0.3, nesterov=False)
+    model.compile(optimizer='Adam', loss='categorical_crossentropy',metrics=['accuracy'])
 
     return model
 def get_1d(n_ch,patch_height,patch_width):
