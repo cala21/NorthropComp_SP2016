@@ -10,6 +10,9 @@
 import numpy as np
 import configparser
 from matplotlib import pyplot as plt
+import os 
+#os.environ['KERAS_BACKEND'] = 'theano'
+#os.environ['THEANO_FLAGS']='mode=FAST_RUN,device=cpu,floatX=float32,optimizer=fast_compile'
 #Keras
 from keras.models import model_from_json
 from keras.models import Model
@@ -109,7 +112,7 @@ patches_masks_test = None
 db = DatabaseProxy()
 
 #============ Load the data and divided in patches
-_, _ , patches_imgs_test, patches_masks_test = db.getTestAndTrainingData(batches=1)
+_, _ , patches_imgs_test, patches_masks_test = db.getTestAndTrainingData(batches=32)
 
 
 #================ Run the prediction of the patches ==================================
@@ -118,7 +121,7 @@ best_last = config.get('testing settings', 'best_last')
 model = model_from_json(open(path_experiment+name_experiment +'_architecture.json').read())
 model.load_weights(path_experiment+name_experiment + '_'+best_last+'_weights.h5')
 #Calculate the predictions
-predictions = model.predict(patches_imgs_test, batch_size=32, verbose=2)
+predictions = model.predict(patches_imgs_test, batch_size=40, verbose=2)
 print("predicted images size :")
 print(predictions.shape)
 

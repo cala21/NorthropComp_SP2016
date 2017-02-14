@@ -17,10 +17,15 @@ def write_hdf5(arr,outfile):
 def rgb2gray(rgb):
     assert (len(rgb.shape)==4)  #4D arrays
     assert (rgb.shape[1]==3)
-    bn_imgs = rgb[:,0,:,:]*0.299 + rgb[:,1,:,:]*0.587 + rgb[:,2,:,:]*0.114
+    bn_imgs = rgb[:,0,:,:]
     bn_imgs = np.reshape(bn_imgs,(rgb.shape[0],1,rgb.shape[2],rgb.shape[3]))
     return bn_imgs
 
+def gray2rgb(rgb):
+    assert (len(rgb.shape)==4)  #4D arrays
+    assert (rgb.shape[1]==1)
+    bn_imgs = np.repeat(rgb[:,:,:,:], 3, 1)
+    return bn_imgs
 #group a set of images row per columns
 def group_images(data,per_row):
     assert data.shape[0]%per_row==0

@@ -17,12 +17,13 @@ def my_PreProc(data):
     assert(len(data.shape)==4)
     assert (data.shape[1]==3)  #Use the original images
     #black-white conversion
+    
     train_imgs = rgb2gray(data)
     #my preprocessing:
-    train_imgs = dataset_normalized(train_imgs)
+    #train_imgs = dataset_normalized(train_imgs)
     train_imgs = clahe_equalized(train_imgs)
     train_imgs = adjust_gamma(train_imgs, 1.2)
-    train_imgs = train_imgs/255.  #reduce to 0-1 range
+    train_imgs = gray2rgb(train_imgs)
     return train_imgs
 
 

@@ -41,18 +41,6 @@ class DatabaseProxy:
             #b_data = binascii.unhexlify(img)
             stream = BytesIO(img) 
             image = Image.open(stream)        
-            width, height = image.size
-            new_im = Image.new('RGB', (width*3, height))
-            new_im.paste(image,(0,0))
-            enhancer = ImageEnhance.Sharpness(image)
-            image = enhancer.enhance(2)
-            
-            new_im.paste(image,(width,0))
-            enhancer = ImageEnhance.Contrast(image)
-            image = enhancer.enhance(2)
-            new_im.paste(image,(width*2,0))
-            new_im.show()
-            exit()
             #b_data1 = binascii.unhexlify(label)
             stream1 = BytesIO(label)
             labelsi = Image.open(stream1)
@@ -193,34 +181,34 @@ def main():
     db = DatabaseProxy()
     data = db.test()
 
-    #imgs = [i[0] for i in data]
-    #labels = [i[1] for i in data]
-    #imgs = getPixels(imgs)
-    #imgs = [i[0]  for i in imgs]
-    #labels = getPixels(labels)
-    #labels = [i for j in labels for i in j]
-    #
-    #import matplotlib.mlab as mlab
-    #import matplotlib.pyplot as plt
-    #import pylab as P
-#
-   #
-#
-    #d = defaultdict(lambda:defaultdict(lambda:0))
-    #for im, lb in zip(imgs, labels):
-    #    d[lb][im] +=1
-    #total = []
-    #for i in range(0,6):
-    #    qq = [x for x in sorted(d[i].items(), key=operator.itemgetter(1), reverse=True)]
-    #    all = numpy.array([x[0] for x in d[i].items() for i in range(x[1])])
-    #    out = "Label: {}\nMin: {}\nMax: {}\nMean: {}\nSTD: {}\n".format(i, min(qq, key=operator.itemgetter(0)), max(qq, key=operator.itemgetter(0)),numpy.mean(all), numpy.std(all) )  
-    #    total.append(all)
-    #
-    #    
-    #    print(out)
-    #n, bins, patches = plt.hist(total, 200, alpha=.75, label=['0', '1', '2','3','4','5'])
-    #plt.grid(True)
-    #P.legend()
-    #plt.show()
+    imgs = [i[0] for i in data]
+    labels = [i[1] for i in data]
+    imgs = getPixels(imgs)
+    imgs = [i[0]  for i in imgs]
+    labels = getPixels(labels)
+    labels = [i for j in labels for i in j]
+    
+    import matplotlib.mlab as mlab
+    import matplotlib.pyplot as plt
+    import pylab as P
+
+   
+
+    d = defaultdict(lambda:defaultdict(lambda:0))
+    for im, lb in zip(imgs, labels):
+        d[lb][im] +=1
+    total = []
+    for i in range(0,6):
+        qq = [x for x in sorted(d[i].items(), key=operator.itemgetter(1), reverse=True)]
+        all = numpy.array([x[0] for x in d[i].items() for i in range(x[1])])
+        out = "Label: {}\nMin: {}\nMax: {}\nMean: {}\nSTD: {}\n".format(i, min(qq, key=operator.itemgetter(0)), max(qq, key=operator.itemgetter(0)),numpy.mean(all), numpy.std(all) )  
+        total.append(all)
+    
+        
+        print(out)
+    n, bins, patches = plt.hist(total, 200, alpha=.75, label=['0', '1', '2','3','4','5'])
+    plt.grid(True)
+    P.legend()
+    plt.show()
 if __name__ == '__main__':
     main()
