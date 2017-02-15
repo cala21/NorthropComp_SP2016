@@ -13,23 +13,48 @@ from help_functions import *
 
 
 #My pre processing (use for both training and testing!)
-def my_PreProc(data):
+def my_PreProc(data, saveImage=False, experiement_name=None):
     assert(len(data.shape)==4)
     assert (data.shape[1]==3)  #Use the original images
     #black-white conversion
     
     train_imgs = rgb2gray(data)
+    gray = np.repeat(train_imgs[0,:,:], 3, 0)
     #my preprocessing:
     #train_imgs = dataset_normalized(train_imgs)
+    train_imgs = gaussian_edge_sharpening(train_imgs)
+    sharpen = np.repeat(train_imgs[0,:,:], 3, 0)
     train_imgs = clahe_equalized(train_imgs)
+    clahe = np.repeat(train_imgs[0,:,:], 3, 0)
     train_imgs = adjust_gamma(train_imgs, 1.2)
+    gamma = np.repeat(train_imgs[0,:,:], 3, 0)
     train_imgs = gray2rgb(train_imgs)
+    final = train_imgs[0]
+
+    if(saveImage):
+        all = np.hstack((gray, sharpen, clahe, gamma))
+        import pdb; pdb.set_trace()
+        cv2.imshow( "./" + experiement_name + "/" + experiement_name +"_preprocessing.png", all)
+        cv2.waitkey(0)
+        Image.fromarray(final).save("./" + experiement_name + "/" + experiement_name +"final_preprocessing.png") 
+    
     return train_imgs
 
 
 #============================================================
 #========= PRE PROCESSING FUNCTIONS ========================#
 #============================================================
+
+#==== sharpness
+def gaussian_edge_sharpening(imgs):
+    assert (len(imgs.shape)==4)  #4D arrays
+    assert (imgs.shape[1]==1)  #check the channel is 1
+    kernel_sharpen = np.array([[-1,-1,-1,-1,-1], [-1,2,2,2,-1], [-1,2,8,2,-1], [-1,2,2,2,-1], [-1,-1,-1,-1,-1]]) / 8.0
+    imgs_sharpened = np.empty(imgs.shape)
+    for i in range(imgs.shape[0]):
+        imgs_sharpened[i,0] = cv2.filter2D(np.array(imgs[i,0], dtype = np.uint8), -1, kernel_sharpen)
+    return imgs_sharpened
+
 
 #==== histogram equalization
 def histo_equalized(imgs):

@@ -9,6 +9,12 @@ import numpy
 import random
 import code
 import operator
+import cv2
+
+import sys
+sys.path.insert(0, '../lib/')
+from pre_processing import my_PreProc
+
 
 def getPixels(listOfImages):
     toRet = numpy.array([i for sublist in listOfImages for item in sublist for i in item])
@@ -20,14 +26,32 @@ def shuffle(a,b):
     a = [i[0] for i in temp]
     b = [i[1] for i in temp]
 
-def mapGrayscaleToColor(data):
-    pass
-    
+#def imagePreprocessing(image):
+#    def contrast(alpha, image):
+#        enhancer = ImageEnhance.Contrast(image)
+#        return enhancer.enhance(2)
+#
+#    def clahe_equalized(image):
+#        opencvImage = numpy.array(image)[:,0,:,:]
+#        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+#        cvImg = clahe.apply(opencvImage)
+#        cvImg = numpy.
+#        return Image.fromarray(cvImg)
+#
+#    def sharpness(beta, image):
+#        enhancer = ImageEnhance.Sharpness(image)
+#        return enhancer.enhance(2)
+#
+#    #contrast(2)
+#    image = clahe_equalized(image)
+#    image = sharpness(2, image)
+#    return image
+
 class DatabaseProxy:
     def __init__(self):
         self.db = MySQLdb.connect("localhost", "root", "password", "goes")
         
-
+        
 
     def test(self, image=False):
         cursor = self.db.cursor()
@@ -77,11 +101,9 @@ class DatabaseProxy:
             label = raw[1]#.decode("cp437")
             #b_data = binascii.unhexlify(img)
             stream = BytesIO(img) 
-            image = Image.open(stream)
-            enhancer = ImageEnhance.Contrast(image)
-            image = enhancer.enhance(2)
-            enhancer = ImageEnhance.Sharpness(image)
-            image = enhancer.enhance(2)
+
+            image = imagePreprocessing(Image.open(stream))
+
             #b_data1 = binascii.unhexlify(label)
             stream1 = BytesIO(label)
             labelsi = Image.open(stream1)
@@ -123,6 +145,9 @@ class DatabaseProxy:
         trainingData = trainingData.transpose((0,3,1,2))
         #trainingLabels = trainingLabels.transpose((0,3,1,2))
         
+
+        testData = my_PreProc(testData, saveImage=True, experiment_name="test")
+        trainingData = my_PreProc(trainingData)
 
         if dim == 1:
             masks = testData
@@ -181,34 +206,40 @@ def main():
     db = DatabaseProxy()
     data = db.test()
 
-    imgs = [i[0] for i in data]
+    imgs = numpy.array([i[0] for i in data])
     labels = [i[1] for i in data]
-    imgs = getPixels(imgs)
-    imgs = [i[0]  for i in imgs]
+    #imgs = getPixels(imgs)
+    #imgs = [i[0]  for i in imgs]
     labels = getPixels(labels)
     labels = [i for j in labels for i in j]
-    
-    import matplotlib.mlab as mlab
-    import matplotlib.pyplot as plt
-    import pylab as P
+
+
+    imgs = imgs.transpose((0,3,1,2))
+
+    testData = my_PreProc(imgs, saveImage=True, experiement_name="test")
+
+    #
+    #import matplotlib.mlab as mlab
+    #import matplotlib.pyplot as plt
+    #import pylab as P
 
    
 
-    d = defaultdict(lambda:defaultdict(lambda:0))
-    for im, lb in zip(imgs, labels):
-        d[lb][im] +=1
-    total = []
-    for i in range(0,6):
-        qq = [x for x in sorted(d[i].items(), key=operator.itemgetter(1), reverse=True)]
-        all = numpy.array([x[0] for x in d[i].items() for i in range(x[1])])
-        out = "Label: {}\nMin: {}\nMax: {}\nMean: {}\nSTD: {}\n".format(i, min(qq, key=operator.itemgetter(0)), max(qq, key=operator.itemgetter(0)),numpy.mean(all), numpy.std(all) )  
-        total.append(all)
-    
-        
-        print(out)
-    n, bins, patches = plt.hist(total, 200, alpha=.75, label=['0', '1', '2','3','4','5'])
-    plt.grid(True)
-    P.legend()
-    plt.show()
+    #d = defaultdict(lambda:defaultdict(lambda:0))
+    #for im, lb in zip(imgs, labels):
+    #    d[lb][im] +=1
+    #total = []
+    #for i in range(0,6):
+    #    qq = [x for x in sorted(d[i].items(), key=operator.itemgetter(1), reverse=True)]
+    #    all = numpy.array([x[0] for x in d[i].items() for i in range(x[1])])
+    #    out = "Label: {}\nMin: {}\nMax: {}\nMean: {}\nSTD: {}\n".format(i, min(qq, key=operator.itemgetter(0)), max(qq, key=operator.itemgetter(0)),numpy.mean(all), numpy.std(all) )  
+    #    total.append(all)
+    #
+    #    
+    #    print(out)
+    #n, bins, patches = plt.hist(total, 200, alpha=.75, label=['0', '1', '2','3','4','5'])
+    #plt.grid(True)
+    #P.legend()
+    #plt.show()
 if __name__ == '__main__':
     main()
