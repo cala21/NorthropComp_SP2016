@@ -2,7 +2,7 @@ import h5py
 import numpy as np
 from PIL import Image
 from matplotlib import pyplot as plt
-
+import cv2, ipdb
 from keras.utils.np_utils import to_categorical
 
 def load_hdf5(infile):
@@ -23,9 +23,27 @@ def rgb2gray(rgb):
 
 def gray2rgb(rgb):
     assert (len(rgb.shape)==4)  #4D arrays
-    assert (rgb.shape[1]==1)
+    assert(rgb.shape[1]==1)
     bn_imgs = np.repeat(rgb[:,:,:,:], 3, 1)
     return bn_imgs
+
+#Single images
+def PIL2OpenCV(image):
+    assert(type(image) == Image or type(image) == Image.Image)
+    img = np.array(image)
+    img = np.transpose(img[:,:,:1], (2,0,1))
+    return img
+#Single images
+def OpenCV2PIL(image):
+    assert(type(image) == np.ndarray)
+    assert(len(image.shape) == 3)
+    assert(image.shape[0] == 1)
+    img = np.transpose(image, (1,2,0)).repeat(3,2)
+    pil_im = Image.fromarray(img.astype(np.uint8))
+    return pil_im
+
+
+
 #group a set of images row per columns
 def group_images(data,per_row):
     assert data.shape[0]%per_row==0

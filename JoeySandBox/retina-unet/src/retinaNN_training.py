@@ -289,7 +289,7 @@ name_experiment = config.get('experiment name', 'name')
 N_epochs = int(config.get('training settings', 'N_epochs'))
 batch_size = int(config.get('training settings', 'batch_size'))
 
-db = DatabaseProxy()
+db = DatabaseProxy(experiment_name=name_experiment)
 
 #============ Load the data and divided in patches
 patches_imgs_train, patches_masks_train, patches_imgs_test, patches_masks_test = db.getTestAndTrainingData(
@@ -341,7 +341,7 @@ checkpointer = ModelCheckpoint(filepath='./' + name_experiment + '/' + name_expe
 patches_masks_train = masks_Unet(
     patches_masks_train)  # reduce memory consumption#
 model.fit(patches_imgs_train, patches_masks_train, nb_epoch=N_epochs, batch_size=batch_size,
-          verbose=2, shuffle=True, validation_split=0.3, callbacks=[checkpointer])
+          verbose=2, shuffle=True, validation_split=0.2, callbacks=[checkpointer])
 
 
 #========== Save and test the last model ===================

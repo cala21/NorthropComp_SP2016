@@ -10,7 +10,7 @@ test_border_masks = DRIVE_dataset_borderMasks_test.hdf5
 
 
 [experiment name]
-name = test2
+name = test
 
 
 [data attributes]

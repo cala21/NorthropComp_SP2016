@@ -11,9 +11,15 @@ import code
 import operator
 import cv2
 
-import sys
-sys.path.insert(0, '../lib/')
-from pre_processing import my_PreProc
+
+import sys, os
+if(os.getcwd()[-3:] == "src" ):
+    sys.path.insert(0, '../lib/')
+    from pre_processing import my_PreProc
+else:
+    sys.path.insert(0, './lib/')
+    from pre_processing import my_PreProc
+
 
 
 def getPixels(listOfImages):
@@ -26,30 +32,10 @@ def shuffle(a,b):
     a = [i[0] for i in temp]
     b = [i[1] for i in temp]
 
-#def imagePreprocessing(image):
-#    def contrast(alpha, image):
-#        enhancer = ImageEnhance.Contrast(image)
-#        return enhancer.enhance(2)
-#
-#    def clahe_equalized(image):
-#        opencvImage = numpy.array(image)[:,0,:,:]
-#        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
-#        cvImg = clahe.apply(opencvImage)
-#        cvImg = numpy.
-#        return Image.fromarray(cvImg)
-#
-#    def sharpness(beta, image):
-#        enhancer = ImageEnhance.Sharpness(image)
-#        return enhancer.enhance(2)
-#
-#    #contrast(2)
-#    image = clahe_equalized(image)
-#    image = sharpness(2, image)
-#    return image
-
 class DatabaseProxy:
-    def __init__(self):
+    def __init__(self, experiment_name=None):
         self.db = MySQLdb.connect("localhost", "root", "password", "goes")
+        self.experiment_name = experiment_name
         
         
 
@@ -102,9 +88,14 @@ class DatabaseProxy:
             #b_data = binascii.unhexlify(img)
             stream = BytesIO(img) 
 
-            image = imagePreprocessing(Image.open(stream))
+            image = Image.open(stream)
 
-            #b_data1 = binascii.unhexlify(label)
+            #enhancer = ImageEnhance.Contrast(image)
+            #image = enhancer.enhance(2)
+            #enhancer = ImageEnhance.Sharpness(image)
+            #image = enhancer.enhance(2)
+            
+          #b_data1 = binascii.unhexlify(label)
             stream1 = BytesIO(label)
             labelsi = Image.open(stream1)
 
@@ -146,7 +137,7 @@ class DatabaseProxy:
         #trainingLabels = trainingLabels.transpose((0,3,1,2))
         
 
-        testData = my_PreProc(testData, saveImage=True, experiment_name="test")
+        testData = my_PreProc(testData, saveImage=True, experiment_name=self.experiment_name)
         trainingData = my_PreProc(trainingData)
 
         if dim == 1:
@@ -167,7 +158,7 @@ class DatabaseProxy:
 
     def getIterators(self, batches=10):
         cursor = self.db.cursor()
-        numrows = cursor.execute("SELECT PixelData, PixelLabels FROM goes_data ORDER BY RAND() ") #randomly select all of the images to then put into traingin or test sets
+        numrows = cursor.execute("SELECT PixelData, PixelLabels FROM goes_data ORDER BY RAND()") #randomly select all of the images to then put into traingin or test sets
         print(numrows)
         data = list([row[0], row[1]]  for row in cursor.fetchall() )
 
@@ -216,7 +207,7 @@ def main():
 
     imgs = imgs.transpose((0,3,1,2))
 
-    testData = my_PreProc(imgs, saveImage=True, experiement_name="test")
+    testData = my_PreProc(imgs, saveImage=True, experiment_name="ep100")
 
     #
     #import matplotlib.mlab as mlab
