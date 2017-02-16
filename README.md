@@ -55,7 +55,4 @@ The following files will be saved in the folder with same name of the experiment
 - Report on the performance
 - Classification Report
 
-All the results are referred only to the pixels belonging to the FOV, selected by the masks included in the DRIVE database
-
-
 ##[Website](http://northropcomputing.com)
