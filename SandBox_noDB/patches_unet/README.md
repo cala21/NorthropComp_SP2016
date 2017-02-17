@@ -1,3 +1,24 @@
+Messing with our inputs... Changes:
+use configurations.txt file again to set patch dimensions, epochs, size, and other stuff, currently using 32x32
+using original pre_processesing but reduce images to a scale of 1-5
+pre_proc now done in extract_batches rather than dbproxy
+re-up to 5 labels, but I don't know what to do with 255 so I just gave it label 0
+masks are also on a scale of 1-5
+UNET mask input/model output adjusted for 5 classes (change back to 4 if you wanna keep using 4)
+
+As you can see in config, the last model I trained used 7100 subimgs & 10 epochs because I'm running this on
+my laptop (you could probably train faster if you ran it on a potato instead of my laptop's gpu) 
+Compared to the 190000 patches + 150 epochs the original paper uses I would hope that params which are a bit higher will 
+produce more accurate results. 
+
+I've tried messing with the patch size params and stuff, but I don't trust anything from that to be meaningful without 
+proper training. 
+
+Testing accuracies come out to be 70-75% usually with the small training size. 
+Last model was ~72% supposedly, check the performances.txt file in experiments... Can look at the sample input imgs/masks but you may have to do it locally. They look pitch black to me on github but they shouldn't be
+
+
+
 # NorthropComp_SP2016
 
 This is Northrop Computing, senior project 2016/2017. The Wiki contains useful resources (readings and docs) about machine learning and neural net. 
