@@ -1,0 +1,602 @@
+commit c4103768e57cc075a02434b0fe6a6fde20fd2367
+Author: Ryan Riley <ryan.b.riley@colorado.edu>
+Date:   Fri Feb 10 15:11:40 2017 -0700
+
+    adding dynamic image display
+
+diff --git a/.DS_Store b/.DS_Store
+index 94aa853..61e5e11 100644
+Binary files a/.DS_Store and b/.DS_Store differ
+diff --git a/northrop_computing_www/.DS_Store b/northrop_computing_www/.DS_Store
+index 7b4ad33..dddaf83 100644
+Binary files a/northrop_computing_www/.DS_Store and b/northrop_computing_www/.DS_Store differ
+diff --git a/northrop_computing_www/classify/models.py b/northrop_computing_www/classify/models.py
+index fc53763..dab5261 100644
+--- a/northrop_computing_www/classify/models.py
++++ b/northrop_computing_www/classify/models.py
+@@ -2,5 +2,5 @@ from django.db import models
+ 
+ class imageUpload(models.Model):
+     id = models.AutoField(primary_key=True)
+-    image = models.FileField(upload_to='documents/')
++    image = models.FileField(upload_to='images/')
+     uploaded_at = models.DateTimeField(auto_now_add=True)
+diff --git a/northrop_computing_www/classify/models.pyc b/northrop_computing_www/classify/models.pyc
+index 41038fe..472e499 100644
+Binary files a/northrop_computing_www/classify/models.pyc and b/northrop_computing_www/classify/models.pyc differ
+diff --git a/northrop_computing_www/classify/urls.py b/northrop_computing_www/classify/urls.py
+index 831c02e..c0b7df7 100644
+--- a/northrop_computing_www/classify/urls.py
++++ b/northrop_computing_www/classify/urls.py
+@@ -1,8 +1,11 @@
++from django.conf import settings
+ from django.conf.urls import url
++from django.conf.urls.static import static
+ 
+ from . import views
+ 
+ urlpatterns = [
+     url(r'^$', views.index, name='classifier'),
+     url(r'^demo$', views.demo, name='demo'),
+-]
++    url(r'^media/', views.demo, name='demo'),
++] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+diff --git a/northrop_computing_www/classify/urls.pyc b/northrop_computing_www/classify/urls.pyc
+index f428497..cb4284a 100644
+Binary files a/northrop_computing_www/classify/urls.pyc and b/northrop_computing_www/classify/urls.pyc differ
+diff --git a/northrop_computing_www/classify/views.py b/northrop_computing_www/classify/views.py
+index 7aa981a..ceef8be 100644
+--- a/northrop_computing_www/classify/views.py
++++ b/northrop_computing_www/classify/views.py
+@@ -8,9 +8,14 @@ from .forms import imageForm
+ def index(request):
+     if request.method == 'POST':
+         form = imageForm(request.POST, request.FILES)
++        image_data = imageUpload.objects.all().latest('uploaded_at')
+         if form.is_valid():
+             form.save()
+-            return HttpResponseRedirect('/classify/demo')
++            return render(request, 'classify/index.html', {
++                'form': form,
++                'image_data' : image_data,
++            })
++            #return HttpResponseRedirect('/classify/demo')
+     else:
+         form = imageForm()
+     return render(request, 'classify/index.html', {
+@@ -18,9 +23,10 @@ def index(request):
+     })
+ 
+ def demo(request):
+-    image_data = imageUpload.objects.all().latest('uploaded_at').image#latest('uploaded_at')
+-    #print image_data
+-    #html = '<img src="/media/documents/krHJs8F.jpg">'
+-    return HttpResponse(image_data, content_type="image/jpg")
++    image_data = imageUpload.objects.all().latest('uploaded_at')
++    return render(request, 'classify/demo.html', {
++        'image_data': image_data
++    })
++    #return HttpResponse(image_data, content_type="image/jpg")
+ 
+     #return render(request,'classify/index.html',{ })
+diff --git a/northrop_computing_www/classify/views.pyc b/northrop_computing_www/classify/views.pyc
+index 2a39757..cc9dbc2 100644
+Binary files a/northrop_computing_www/classify/views.pyc and b/northrop_computing_www/classify/views.pyc differ
+diff --git a/northrop_computing_www/db.sqlite3 b/northrop_computing_www/db.sqlite3
+index 0e81c66..4fbbcd5 100644
+Binary files a/northrop_computing_www/db.sqlite3 and b/northrop_computing_www/db.sqlite3 differ
+diff --git a/northrop_computing_www/media/.DS_Store b/northrop_computing_www/media/.DS_Store
+new file mode 100644
+index 0000000..febead9
+Binary files /dev/null and b/northrop_computing_www/media/.DS_Store differ
+diff --git a/northrop_computing_www/media/documents/Abstract_minimalistic_circles_shape_geometry_omega_2560x1600_lnzrM6m.jpg b/northrop_computing_www/media/documents/Abstract_minimalistic_circles_shape_geometry_omega_2560x1600_lnzrM6m.jpg
+new file mode 100644
+index 0000000..e4ce5b4
+Binary files /dev/null and b/northrop_computing_www/media/documents/Abstract_minimalistic_circles_shape_geometry_omega_2560x1600_lnzrM6m.jpg differ
+diff --git a/northrop_computing_www/media/documents/imagetest_5gMoJKr.jpg b/northrop_computing_www/media/documents/imagetest_5gMoJKr.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/documents/imagetest_5gMoJKr.jpg differ
+diff --git a/northrop_computing_www/media/documents/imagetest_5qXERIo.jpg b/northrop_computing_www/media/documents/imagetest_5qXERIo.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/documents/imagetest_5qXERIo.jpg differ
+diff --git a/northrop_computing_www/media/documents/imagetest_92CX8Zx.jpg b/northrop_computing_www/media/documents/imagetest_92CX8Zx.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/documents/imagetest_92CX8Zx.jpg differ
+diff --git a/northrop_computing_www/media/documents/imagetest_CDxIb9z.jpg b/northrop_computing_www/media/documents/imagetest_CDxIb9z.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/documents/imagetest_CDxIb9z.jpg differ
+diff --git a/northrop_computing_www/media/documents/imagetest_D7qd4OU.jpg b/northrop_computing_www/media/documents/imagetest_D7qd4OU.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/documents/imagetest_D7qd4OU.jpg differ
+diff --git a/northrop_computing_www/media/documents/imagetest_HypOAhL.jpg b/northrop_computing_www/media/documents/imagetest_HypOAhL.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/documents/imagetest_HypOAhL.jpg differ
+diff --git a/northrop_computing_www/media/documents/imagetest_IBR2IdB.jpg b/northrop_computing_www/media/documents/imagetest_IBR2IdB.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/documents/imagetest_IBR2IdB.jpg differ
+diff --git a/northrop_computing_www/media/documents/imagetest_JZ4baVu.jpg b/northrop_computing_www/media/documents/imagetest_JZ4baVu.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/documents/imagetest_JZ4baVu.jpg differ
+diff --git a/northrop_computing_www/media/documents/imagetest_NEHdAnQ.jpg b/northrop_computing_www/media/documents/imagetest_NEHdAnQ.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/documents/imagetest_NEHdAnQ.jpg differ
+diff --git a/northrop_computing_www/media/documents/imagetest_Rikctbh.jpg b/northrop_computing_www/media/documents/imagetest_Rikctbh.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/documents/imagetest_Rikctbh.jpg differ
+diff --git a/northrop_computing_www/media/documents/imagetest_U02ivg3.jpg b/northrop_computing_www/media/documents/imagetest_U02ivg3.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/documents/imagetest_U02ivg3.jpg differ
+diff --git a/northrop_computing_www/media/documents/imagetest_XMzZYyx.jpg b/northrop_computing_www/media/documents/imagetest_XMzZYyx.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/documents/imagetest_XMzZYyx.jpg differ
+diff --git a/northrop_computing_www/media/documents/imagetest_YS63DUZ.jpg b/northrop_computing_www/media/documents/imagetest_YS63DUZ.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/documents/imagetest_YS63DUZ.jpg differ
+diff --git a/northrop_computing_www/media/documents/imagetest_ZNfBja9.jpg b/northrop_computing_www/media/documents/imagetest_ZNfBja9.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/documents/imagetest_ZNfBja9.jpg differ
+diff --git a/northrop_computing_www/media/documents/imagetest_eAl1y54.jpg b/northrop_computing_www/media/documents/imagetest_eAl1y54.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/documents/imagetest_eAl1y54.jpg differ
+diff --git a/northrop_computing_www/media/documents/imagetest_efUjCa0.jpg b/northrop_computing_www/media/documents/imagetest_efUjCa0.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/documents/imagetest_efUjCa0.jpg differ
+diff --git a/northrop_computing_www/media/documents/imagetest_ghOZwfX.jpg b/northrop_computing_www/media/documents/imagetest_ghOZwfX.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/documents/imagetest_ghOZwfX.jpg differ
+diff --git a/northrop_computing_www/media/documents/imagetest_grVJg3e.jpg b/northrop_computing_www/media/documents/imagetest_grVJg3e.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/documents/imagetest_grVJg3e.jpg differ
+diff --git a/northrop_computing_www/media/documents/imagetest_h76ScM2.jpg b/northrop_computing_www/media/documents/imagetest_h76ScM2.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/documents/imagetest_h76ScM2.jpg differ
+diff --git a/northrop_computing_www/media/documents/imagetest_mavxboo.jpg b/northrop_computing_www/media/documents/imagetest_mavxboo.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/documents/imagetest_mavxboo.jpg differ
+diff --git a/northrop_computing_www/media/documents/imagetest_n64xWWK.jpg b/northrop_computing_www/media/documents/imagetest_n64xWWK.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/documents/imagetest_n64xWWK.jpg differ
+diff --git a/northrop_computing_www/media/documents/imagetest_niJtpVS.jpg b/northrop_computing_www/media/documents/imagetest_niJtpVS.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/documents/imagetest_niJtpVS.jpg differ
+diff --git a/northrop_computing_www/media/documents/imagetest_q7GBIVu.jpg b/northrop_computing_www/media/documents/imagetest_q7GBIVu.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/documents/imagetest_q7GBIVu.jpg differ
+diff --git a/northrop_computing_www/media/documents/imagetest_qwgipjI.jpg b/northrop_computing_www/media/documents/imagetest_qwgipjI.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/documents/imagetest_qwgipjI.jpg differ
+diff --git a/northrop_computing_www/media/documents/imagetest_scptwHB.jpg b/northrop_computing_www/media/documents/imagetest_scptwHB.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/documents/imagetest_scptwHB.jpg differ
+diff --git a/northrop_computing_www/media/documents/imagetest_t4zFLGt.jpg b/northrop_computing_www/media/documents/imagetest_t4zFLGt.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/documents/imagetest_t4zFLGt.jpg differ
+diff --git a/northrop_computing_www/media/documents/imagetest_tHsjPW9.jpg b/northrop_computing_www/media/documents/imagetest_tHsjPW9.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/documents/imagetest_tHsjPW9.jpg differ
+diff --git a/northrop_computing_www/media/documents/imagetest_uc8r3XM.jpg b/northrop_computing_www/media/documents/imagetest_uc8r3XM.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/documents/imagetest_uc8r3XM.jpg differ
+diff --git a/northrop_computing_www/media/documents/imagetest_wb17quf.jpg b/northrop_computing_www/media/documents/imagetest_wb17quf.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/documents/imagetest_wb17quf.jpg differ
+diff --git a/northrop_computing_www/media/documents/imagetest_zmK27B8.jpg b/northrop_computing_www/media/documents/imagetest_zmK27B8.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/documents/imagetest_zmK27B8.jpg differ
+diff --git a/northrop_computing_www/media/documents/krHJs8F_9uQIMwr.jpg b/northrop_computing_www/media/documents/krHJs8F_9uQIMwr.jpg
+new file mode 100644
+index 0000000..b0583ca
+Binary files /dev/null and b/northrop_computing_www/media/documents/krHJs8F_9uQIMwr.jpg differ
+diff --git a/northrop_computing_www/media/documents/krHJs8F_EAYqCEa.jpg b/northrop_computing_www/media/documents/krHJs8F_EAYqCEa.jpg
+new file mode 100644
+index 0000000..b0583ca
+Binary files /dev/null and b/northrop_computing_www/media/documents/krHJs8F_EAYqCEa.jpg differ
+diff --git a/northrop_computing_www/media/images/classify/imagetest.jpg b/northrop_computing_www/media/images/classify/imagetest.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/images/classify/imagetest.jpg differ
+diff --git a/northrop_computing_www/media/images/imagetest.jpg b/northrop_computing_www/media/images/imagetest.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/images/imagetest.jpg differ
+diff --git a/northrop_computing_www/media/images/imagetest_3EXQCOU.jpg b/northrop_computing_www/media/images/imagetest_3EXQCOU.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/images/imagetest_3EXQCOU.jpg differ
+diff --git a/northrop_computing_www/media/images/imagetest_8fsEc6s.jpg b/northrop_computing_www/media/images/imagetest_8fsEc6s.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/images/imagetest_8fsEc6s.jpg differ
+diff --git a/northrop_computing_www/media/images/imagetest_BL8EyCr.jpg b/northrop_computing_www/media/images/imagetest_BL8EyCr.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/images/imagetest_BL8EyCr.jpg differ
+diff --git a/northrop_computing_www/media/images/imagetest_CmUY7dj.jpg b/northrop_computing_www/media/images/imagetest_CmUY7dj.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/images/imagetest_CmUY7dj.jpg differ
+diff --git a/northrop_computing_www/media/images/imagetest_DcGnl3y.jpg b/northrop_computing_www/media/images/imagetest_DcGnl3y.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/images/imagetest_DcGnl3y.jpg differ
+diff --git a/northrop_computing_www/media/images/imagetest_DftIzOO.jpg b/northrop_computing_www/media/images/imagetest_DftIzOO.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/images/imagetest_DftIzOO.jpg differ
+diff --git a/northrop_computing_www/media/images/imagetest_IryF7j5.jpg b/northrop_computing_www/media/images/imagetest_IryF7j5.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/images/imagetest_IryF7j5.jpg differ
+diff --git a/northrop_computing_www/media/images/imagetest_M8SBJkd.jpg b/northrop_computing_www/media/images/imagetest_M8SBJkd.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/images/imagetest_M8SBJkd.jpg differ
+diff --git a/northrop_computing_www/media/images/imagetest_aZXFYOK.jpg b/northrop_computing_www/media/images/imagetest_aZXFYOK.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/images/imagetest_aZXFYOK.jpg differ
+diff --git a/northrop_computing_www/media/images/imagetest_an6aWHL.jpg b/northrop_computing_www/media/images/imagetest_an6aWHL.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/images/imagetest_an6aWHL.jpg differ
+diff --git a/northrop_computing_www/media/images/imagetest_bzcja2n.jpg b/northrop_computing_www/media/images/imagetest_bzcja2n.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/images/imagetest_bzcja2n.jpg differ
+diff --git a/northrop_computing_www/media/images/imagetest_gMhnxIw.jpg b/northrop_computing_www/media/images/imagetest_gMhnxIw.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/images/imagetest_gMhnxIw.jpg differ
+diff --git a/northrop_computing_www/media/images/imagetest_syIJuMp.jpg b/northrop_computing_www/media/images/imagetest_syIJuMp.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/images/imagetest_syIJuMp.jpg differ
+diff --git a/northrop_computing_www/media/images/imagetest_wqN3z3v.jpg b/northrop_computing_www/media/images/imagetest_wqN3z3v.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/images/imagetest_wqN3z3v.jpg differ
+diff --git a/northrop_computing_www/media/images/imagetest_yZHOlh7.jpg b/northrop_computing_www/media/images/imagetest_yZHOlh7.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/images/imagetest_yZHOlh7.jpg differ
+diff --git a/northrop_computing_www/media/media/imagetest.jpg b/northrop_computing_www/media/media/imagetest.jpg
+new file mode 100644
+index 0000000..7029219
+Binary files /dev/null and b/northrop_computing_www/media/media/imagetest.jpg differ
+diff --git a/northrop_computing_www/northrop_computing_www/settings.py b/northrop_computing_www/northrop_computing_www/settings.py
+index 7a428a2..f09de10 100644
+--- a/northrop_computing_www/northrop_computing_www/settings.py
++++ b/northrop_computing_www/northrop_computing_www/settings.py
+@@ -123,10 +123,7 @@ USE_L10N = True
+ 
+ USE_TZ = True
+ 
+-STATICFILES_DIRS = [
+-    os.path.join(BASE_DIR, "/northrop_computing_www/static"),
+-    #'/var/www/static/',
+-]
++
+ 
+ 
+ # Static files (CSS, JavaScript, Images)
+diff --git a/northrop_computing_www/northrop_computing_www/settings.pyc b/northrop_computing_www/northrop_computing_www/settings.pyc
+index e18cbb1..0f9b3d9 100644
+Binary files a/northrop_computing_www/northrop_computing_www/settings.pyc and b/northrop_computing_www/northrop_computing_www/settings.pyc differ
+diff --git a/northrop_computing_www/northrop_computing_www/urls.py b/northrop_computing_www/northrop_computing_www/urls.py
+index 02d6edb..263611b 100644
+--- a/northrop_computing_www/northrop_computing_www/urls.py
++++ b/northrop_computing_www/northrop_computing_www/urls.py
+@@ -15,6 +15,9 @@ Including another URLconf
+ """
+ from django.conf.urls import include, url
+ from django.contrib import admin
++from django.conf import settings
++from django.conf.urls.static import static
++
+ from . import views
+ 
+ urlpatterns = [
+@@ -23,5 +26,5 @@ urlpatterns = [
+     url(r'^classify/', include('classify.urls')),
+     url(r'^admin/', admin.site.urls),
+     #url(r'^static/', 'django.views.static.serve', name='static'),
+-]
++] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+ # {'document_root': settings.STATIC_ROOT}),
+diff --git a/northrop_computing_www/northrop_computing_www/urls.pyc b/northrop_computing_www/northrop_computing_www/urls.pyc
+index 56f37b3..2293310 100644
+Binary files a/northrop_computing_www/northrop_computing_www/urls.pyc and b/northrop_computing_www/northrop_computing_www/urls.pyc differ
+diff --git a/northrop_computing_www/static/northrop.jpg b/northrop_computing_www/static/northrop.jpg
+new file mode 100644
+index 0000000..fa6756a
+Binary files /dev/null and b/northrop_computing_www/static/northrop.jpg differ
+diff --git a/northrop_computing_www/templates/classify/demo.html b/northrop_computing_www/templates/classify/demo.html
+new file mode 100644
+index 0000000..8bcb4f3
+--- /dev/null
++++ b/northrop_computing_www/templates/classify/demo.html
+@@ -0,0 +1,231 @@
++<!DOCTYPE html>
++<html lang="en">
++<head>
++  <title>Northrop Computing Senior Project</title>
++  <meta charset="utf-8">
++  <meta name="viewport" content="width=device-width, initial-scale=1">
++  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
++  <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet" type="text/css">
++  <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet" type="text/css">
++  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
++  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
++  <style>
++  body {
++      font: 400 15px Lato, sans-serif;
++      line-height: 1.8;
++      color: #818181;
++  }
++  h2 {
++      font-size: 24px;
++      text-transform: uppercase;
++      color: #303030;
++      font-weight: 600;
++      margin-bottom: 30px;
++  }
++  h4 {
++      font-size: 19px;
++      line-height: 1.375em;
++      color: #303030;
++      font-weight: 400;
++      margin-bottom: 30px;
++  }
++  .jumbotron {
++      background-color: #1e56f4;
++      color: #fff;
++      padding: 100px 25px;
++      font-family: Montserrat, sans-serif;
++  }
++  .container-fluid {
++      padding: 60px 50px;
++  }
++  .bg-grey {
++      background-color: #f6f6f6;
++  }
++  .logo-small {
++      color: #1e56f4;
++      font-size: 50px;
++  }
++  .logo {
++      color: #1e56f4;
++      font-size: 200px;
++  }
++  .thumbnail {
++      padding: 0 0 15px 0;
++      border: none;
++      border-radius: 0;
++  }
++  .thumbnail img {
++      width: 100%;
++      height: 100%;
++      margin-bottom: 10px;
++  }
++  .carousel-control.right, .carousel-control.left {
++      background-image: none;
++      color: #1e56f4;
++  }
++  .carousel-indicators li {
++      border-color: #1e56f4;
++  }
++  .carousel-indicators li.active {
++      background-color: #1e56f4;
++  }
++  .item h4 {
++      font-size: 19px;
++      line-height: 1.375em;
++      font-weight: 400;
++      font-style: italic;
++      margin: 70px 0;
++  }
++  .item span {
++      font-style: normal;
++  }
++  .panel {
++      border: 1px solid #f4511e;
++      border-radius:0 !important;
++      transition: box-shadow 0.5s;
++  }
++  .panel:hover {
++      box-shadow: 5px 0px 40px rgba(0,0,0, .2);
++  }
++  .panel-footer .btn:hover {
++      border: 1px solid #f4511e;
++      background-color: #fff !important;
++      color: #f4511e;
++  }
++  .panel-heading {
++      color: #fff !important;
++      background-color: #f4511e !important;
++      padding: 25px;
++      border-bottom: 1px solid transparent;
++      border-top-left-radius: 0px;
++      border-top-right-radius: 0px;
++      border-bottom-left-radius: 0px;
++      border-bottom-right-radius: 0px;
++  }
++  .panel-footer {
++      background-color: white !important;
++  }
++  .panel-footer h3 {
++      font-size: 32px;
++  }
++  .panel-footer h4 {
++      color: #aaa;
++      font-size: 14px;
++  }
++  .panel-footer .btn {
++      margin: 15px 0;
++      background-color: #1e56f4;
++      color: #fff;
++  }
++  .navbar {
++      margin-bottom: 0;
++      background-color: #1e56f4;
++      z-index: 9999;
++      border: 0;
++      font-size: 12px !important;
++      line-height: 1.42857143 !important;
++      letter-spacing: 4px;
++      border-radius: 0;
++      font-family: Montserrat, sans-serif;
++  }
++  .navbar li a, .navbar .navbar-brand {
++      color: #fff !important;
++  }
++  .navbar-nav li a:hover, .navbar-nav li.active a {
++      color: #1e56f4 !important;
++      background-color: #fff !important;
++  }
++  .navbar-default .navbar-toggle {
++      border-color: transparent;
++      color: #fff !important;
++  }
++  footer .glyphicon {
++      font-size: 20px;
++      margin-bottom: 20px;
++      color: #1e56f4;
++  }
++  .slideanim {visibility:hidden;}
++  .slide {
++      animation-name: slide;
++      -webkit-animation-name: slide;
++      animation-duration: 1s;
++      -webkit-animation-duration: 1s;
++      visibility: visible;
++  }
++  @keyframes slide {
++    0% {
++      opacity: 0;
++      transform: translateY(70%);
++    }
++    100% {
++      opacity: 1;
++      transform: translateY(0%);
++    }
++  }
++  @-webkit-keyframes slide {
++    0% {
++      opacity: 0;
++      -webkit-transform: translateY(70%);
++    }
++    100% {
++      opacity: 1;
++      -webkit-transform: translateY(0%);
++    }
++  }
++  @media screen and (max-width: 768px) {
++    .col-sm-4 {
++      text-align: center;
++      margin: 25px 0;
++    }
++    .btn-lg {
++        width: 100%;
++        margin-bottom: 35px;
++    }
++  }
++  @media screen and (max-width: 480px) {
++    .logo {
++        font-size: 150px;
++    }
++  }
++  </style>
++</head>
++<body id="myPage" data-spy="scroll" data-target=".navbar" data-offset="60">
++
++<nav class="navbar navbar-default navbar-fixed-top">
++  <div class="container">
++    <div class="navbar-header">
++      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
++        <span class="icon-bar"></span>
++        <span class="icon-bar"></span>
++        <span class="icon-bar"></span>
++      </button>
++      <a class="navbar-brand" href="/">NC</a>
++    </div>
++    <div class="collapse navbar-collapse" id="myNavbar">
++      <ul class="nav navbar-nav navbar-right">
++        <li><a href="/#about">ABOUT</a></li>
++        <li><a href="/classify/">DEMO</a></li>
++        <li><a href="/#personal">DETAILS</a></li>
++        <li><a href="/#github">GITHUB</a></li>
++        <li><a href="/#contact">CONTACT</a></li>
++      </ul>
++    </div>
++  </div>
++</nav>
++
++<div class="jumbotron text-center">
++  <h1>Northrop Computing <br> CNN image classifer</h1>
++  <p>This Demo will be unbelievable</p>
++</div>
++<div>
++<!  <img src='/static/northrop_computing_www/northrop.jpg'>
++  <img src='{{image_data.image.url}}' alt="data.url">
++</div>
++<div>
++  <center><p>Directions: <br>upload an image to run our classifier</p></center>
++  <form method="post" enctype="multipart/form-data">
++    {% csrf_token %}
++    {{ form.as_p }}
++    <button type="submit">Upload</button>
++  </form>
++</div>
+diff --git a/northrop_computing_www/templates/classify/index.html b/northrop_computing_www/templates/classify/index.html
+index ef4b762..4b57150 100644
+--- a/northrop_computing_www/templates/classify/index.html
++++ b/northrop_computing_www/templates/classify/index.html
+@@ -214,13 +214,17 @@
+ </nav>
+ 
+ <div class="jumbotron text-center">
+-  <h1>Future Demo Site for Northrop Computing</h1>
++  <h1>Northrop Computing <br> CNN image classifer</h1>
+   <p>This Demo will be unbelievable</p>
+ </div>
+ <div>
++  <center><p>Directions: <br>upload an image to run our classifier</p></center>
+   <form method="post" enctype="multipart/form-data">
+     {% csrf_token %}
+     {{ form.as_p }}
+     <button type="submit">Upload</button>
+   </form>
++</div><br><br>
++<div>
++  <img src='{{image_data.image.url}}'>
+ </div>
