@@ -4,3 +4,4 @@
 DRIVE_datasets_training_testing
 *.bak
 tags
+__pycache__

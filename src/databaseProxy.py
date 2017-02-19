@@ -3,15 +3,23 @@ from io import BytesIO
 from itertools import chain
 from collections import defaultdict
 import datetime
-import MySQLdb
-import MySQLdb.cursors as cursors
 import numpy
 import random
 import code
 import operator
 import cv2
 
+
+import sys, os
 from pre_processing import my_PreProc
+
+
+abs_path = os.path.dirname(os.path.abspath(__file__))
+to_raw = "../Dataset/FinalRawData/"
+path_to_raw = os.path.join(abs_path, to_raw)
+
+to_labeled = "../Dataset/FinalLabeledData/"
+path_to_labeled = os.path.join(abs_path, to_labeled)
 
 
 
@@ -25,25 +33,61 @@ def shuffle(a,b):
     a = [i[0] for i in temp]
     b = [i[1] for i in temp]
 
+def loadImages(path_to_labeled,path_to_raw):
+    data = []
+    Labeled = sorted(os.listdir(path_to_labeled))
+    Raw = sorted(os.listdir(path_to_raw))
+    id = 1
+    prev = ""
+    prevd = {}
+    datePattern  = "%H%M%Y%m%d"
+
+    for rawFP, labelFP in zip(Raw,Labeled):
+        d = rawFP[4:-12]
+
+        try:
+            date = datetime.datetime.strptime( d, datePattern  ).strftime("%Y-%m-%d %H:%M:%S")
+
+        except:
+            continue
+
+        p = prevd.get(prev)
+        if not p:
+            p = -1
+
+        rawRaw = open(path_to_raw + rawFP, "rb").read()
+        rawLabel = open(path_to_labeled + labelFP, "rb").read()
+
+        data.append([id,rawRaw,rawLabel,date, -1, p])
+        prev = rawFP
+        prevd[prev] = id
+        id += 1
+    return data
+
+
 class DatabaseProxy:
-    def __init__(self, experiment_name=None):
-        self.db = MySQLdb.connect("localhost", "root", "password", "goes")
+
+    def __init__(self, raw_set = path_to_raw, labeled_set = path_to_labeled, experiment_name=None, N_classes=5):
+        self.path_to_labeled = labeled_set
+        self.path_to_raw = raw_set
         self.experiment_name = experiment_name
-        
-        
+        self.N_classes = N_classes
+
+
 
     def test(self, image=False):
-        cursor = self.db.cursor()
-        numrows = cursor.execute("SELECT PixelData, PixelLabels FROM goes_data ") #randomly select all of the images to then put into traingin or test sets
-        data = list([row[0], row[1]]  for row in cursor.fetchall() )
-        #data = numpy.fromiter(cursor.fetchall(), count=numrows dtype=dt)
+
+        load = loadImages(self.path_to_labeled,self.path_to_raw)
+        data = list([row[1], row[2]]  for row in load)
+        random.shuffle(data)
+
         wrapper = lambda x: [x]
         for i, raw in enumerate(data):
             img = raw[0]#.decode("cp437")
             label = raw[1]#.decode("cp437")
             #b_data = binascii.unhexlify(img)
-            stream = BytesIO(img) 
-            image = Image.open(stream)        
+            stream = BytesIO(img)
+            image = Image.open(stream)
             #b_data1 = binascii.unhexlify(label)
             stream1 = BytesIO(label)
             labelsi = Image.open(stream1)
@@ -52,7 +96,7 @@ class DatabaseProxy:
             t = numpy.asarray(labelsi).copy()
             t[t == 255] = 5
             t = wrapper(t)
-            
+
             data[i][1] = t
         return data
     """
@@ -70,16 +114,17 @@ class DatabaseProxy:
 
     """
     def getTestAndTrainingData(self, trainingSize=.8, testSize=.2, returnAsImage=False, flatten=False, batches=10, dim=3):
-        cursor = self.db.cursor()
-        numrows = cursor.execute("SELECT PixelData, PixelLabels FROM goes_data ORDER BY RAND() LIMIT 88") #randomly select all of the images to then put into traingin or test sets
-        data = list([row[0], row[1]]  for row in cursor.fetchall() )
-        #data = numpy.fromiter(cursor.fetchall(), count=numrows dtype=dt)
+
+        load = loadImages(self.path_to_labeled,self.path_to_raw)
+        data = list([row[1], row[2]]  for row in load)
+        random.shuffle(data)
+
         wrapper = lambda x: [x]
         for i, raw in enumerate(data):
             img = raw[0]#.decode("cp437")
             label = raw[1]#.decode("cp437")
             #b_data = binascii.unhexlify(img)
-            stream = BytesIO(img) 
+            stream = BytesIO(img)
 
             image = Image.open(stream)
 
@@ -87,27 +132,30 @@ class DatabaseProxy:
             #image = enhancer.enhance(2)
             #enhancer = ImageEnhance.Sharpness(image)
             #image = enhancer.enhance(2)
-            
+
           #b_data1 = binascii.unhexlify(label)
             stream1 = BytesIO(label)
             labelsi = Image.open(stream1)
 
             data[i][0] = numpy.asarray(image).tolist()
             t = numpy.asarray(labelsi).copy()
-        
-            t[t == 2] = 0
-            t[t == 1] = 0
-            t[t == 3] = 1
-            t[t == 4] = 2
-            t[t == 255] = 3
+
+            if(self.N_classes == 4):
+                t[t == 2] = 0
+                t[t == 1] = 0
+                t[t == 3] = 1
+                t[t == 4] = 2
+                t[t == 255] = 3
+            elif(self.N_classes == 5):
+                t[t == 255] = 4
 
 
             t = wrapper(t)
-            
-            data[i][1] = t
-            
 
-        splitSize = int(numrows*testSize)
+            data[i][1] = t
+
+
+        splitSize = int(len(data)*testSize)
         testData = numpy.array([ i[0] for i in data[:splitSize] ])
         testLabels = numpy.array([ i[1] for i in data[:splitSize] ])
         trainingData = numpy.array([ i[0] for i in data[splitSize:] ])
@@ -128,16 +176,12 @@ class DatabaseProxy:
         #testLabels = testLabels.transpose((0,3,1,2))
         trainingData = trainingData.transpose((0,3,1,2))
         #trainingLabels = trainingLabels.transpose((0,3,1,2))
-        
-
-        testData = my_PreProc(testData, saveImage=True, experiment_name=self.experiment_name)
-        trainingData = my_PreProc(trainingData)
 
         if dim == 1:
             masks = testData
             im_h = masks.shape[2]
             im_w = masks.shape[3]
-            
+
             new_masks = numpy.empty((masks.shape[0],im_h*im_w,1))
             for i in range(masks.shape[0]):
                 for j in range(im_h):
@@ -150,18 +194,17 @@ class DatabaseProxy:
 
 
     def getIterators(self, batches=10):
-        cursor = self.db.cursor()
-        numrows = cursor.execute("SELECT PixelData, PixelLabels FROM goes_data ORDER BY RAND()") #randomly select all of the images to then put into traingin or test sets
-        print(numrows)
-        data = list([row[0], row[1]]  for row in cursor.fetchall() )
 
-        #data = numpy.fromiter(cursor.fetchall(), count=numrows dtype=dt)
+        load = loadImages(self.path_to_labeled,self.path_to_raw)
+        data = list([row[1], row[2]]  for row in load)
+        random.shuffle(data)
+
         for i, raw in enumerate(data):
             img = raw[0]
             label = raw[1]
-            
-            stream = BytesIO(img) 
-            image = Image.open(stream)            
+
+            stream = BytesIO(img)
+            image = Image.open(stream)
 
             stream1 = BytesIO(label)
             labels = Image.open(stream1)
@@ -169,7 +212,7 @@ class DatabaseProxy:
             data[i][0] = numpy.asarray(image)
             data[i][1] = numpy.asarray(labels)
 
-        
+
         splitSize = int(numrows*.5)
         testData = numpy.array([ i[0] for i in data[:splitSize] ])
         testLabels = numpy.array([ i[1] for i in data[:splitSize] ])
@@ -183,8 +226,8 @@ class DatabaseProxy:
 
         #return valIter(numpy.array_split(testData, batches), numpy.array_split(testLabels, batches), batches), valIter(numpy.array_split(trainingData, batches), numpy.array_split(trainingLabels, batches), batches), valIter(numpy.array_split(trainingData, batches), numpy.array_split(trainingLabels, batches), batches)
 
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.db.close()
+    #def __exit__(self, exc_type, exc_value, traceback):
+    #    self.db.close()
 
 def main():
     db = DatabaseProxy()
@@ -207,7 +250,7 @@ def main():
     #import matplotlib.pyplot as plt
     #import pylab as P
 
-   
+
 
     #d = defaultdict(lambda:defaultdict(lambda:0))
     #for im, lb in zip(imgs, labels):
@@ -216,10 +259,10 @@ def main():
     #for i in range(0,6):
     #    qq = [x for x in sorted(d[i].items(), key=operator.itemgetter(1), reverse=True)]
     #    all = numpy.array([x[0] for x in d[i].items() for i in range(x[1])])
-    #    out = "Label: {}\nMin: {}\nMax: {}\nMean: {}\nSTD: {}\n".format(i, min(qq, key=operator.itemgetter(0)), max(qq, key=operator.itemgetter(0)),numpy.mean(all), numpy.std(all) )  
+    #    out = "Label: {}\nMin: {}\nMax: {}\nMean: {}\nSTD: {}\n".format(i, min(qq, key=operator.itemgetter(0)), max(qq, key=operator.itemgetter(0)),numpy.mean(all), numpy.std(all) )
     #    total.append(all)
     #
-    #    
+    #
     #    print(out)
     #n, bins, patches = plt.hist(total, 200, alpha=.75, label=['0', '1', '2','3','4','5'])
     #plt.grid(True)

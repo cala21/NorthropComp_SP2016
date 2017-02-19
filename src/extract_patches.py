@@ -13,29 +13,29 @@ from pre_processing import my_PreProc
 # random.seed(10)
 
 #Load the original data and return the extracted patches for training/testing
-def get_data_training(DRIVE_train_imgs_original,
-                      DRIVE_train_groudTruth,
+def get_data_training(p_train_imgs_original,
+                      p_train_groudTruth,
                       patch_height,
                       patch_width,
                       N_subimgs,
-                      inside_FOV):
-    train_imgs_original = load_hdf5(DRIVE_train_imgs_original)
-    train_masks = load_hdf5(DRIVE_train_groudTruth) #masks always the same
-    # visualize(group_images(train_imgs_original[0:20,:,:,:],5),'imgs_train')#.show()  #check original imgs train
+                      inside_FOV,
+                      Experiment):
+    train_imgs_original = p_train_imgs_original
+    train_groudTruth = p_train_groudTruth
 
+    train_imgs = my_PreProc(train_imgs_original, saveImage=True, experiment_name=Experiment)
+    train_masks = train_groudTruth
 
-    train_imgs = my_PreProc(train_imgs_original)
-    train_masks = train_masks/255.
-
-    train_imgs = train_imgs[:,:,9:574,:]  #cut bottom and top so now it is 565*565
-    train_masks = train_masks[:,:,9:574,:]  #cut bottom and top so now it is 565*565
+    #train_imgs = train_imgs[:,:,9:574,:]  #cut bottom and top so now it is 565*565
+    #train_masks = train_masks[:,:,9:574,:]  #cut bottom and top so now it is 565*565
     data_consistency_check(train_imgs,train_masks)
 
-    #check masks are within 0-1
-    assert(np.min(train_masks)==0 and np.max(train_masks)==1)
+    print(np.min(train_masks))
+    print(np.max(train_masks))
 
     print("\ntrain images/masks shape:")
     print(train_imgs.shape)
+    print(train_masks.shape)
     print("train images range (min-max): " +str(np.min(train_imgs)) +' - '+str(np.max(train_imgs)))
     print("train masks are within 0-1\n")
 
@@ -51,13 +51,13 @@ def get_data_training(DRIVE_train_imgs_original,
 
 
 #Load the original data and return the extracted patches for training/testing
-def get_data_testing(DRIVE_test_imgs_original, DRIVE_test_groudTruth, Imgs_to_test, patch_height, patch_width):
+def get_data_testing(p_test_imgs_original, p_test_groudTruth, Imgs_to_test, patch_height, patch_width):
     ### test
-    test_imgs_original = load_hdf5(DRIVE_test_imgs_original)
-    test_masks = load_hdf5(DRIVE_test_groudTruth)
-
+    #test_imgs_original = load_hdf5(DRIVE_test_imgs_original)
+    #test_masks = load_hdf5(DRIVE_test_groudTruth)
+    test_imgs_original = p_test_imgs_original
+    test_masks = p_test_groudTruth
     test_imgs = my_PreProc(test_imgs_original)
-    test_masks = test_masks/255.
 
     #extend both images and masks so they can be divided exactly by the patches dimensions
     test_imgs = test_imgs[0:Imgs_to_test,:,:,:]
@@ -67,8 +67,9 @@ def get_data_testing(DRIVE_test_imgs_original, DRIVE_test_groudTruth, Imgs_to_te
 
     data_consistency_check(test_imgs, test_masks)
 
-    #check masks are within 0-1
-    assert(np.max(test_masks)==1  and np.min(test_masks)==0)
+    print(np.max(test_masks))
+    print(np.min(test_masks))
+    #assert(np.max(test_masks)<=1  and np.min(test_masks)>=0)
 
     print("\ntest images/masks shape:")
     print(test_imgs.shape)
@@ -97,21 +98,21 @@ def get_data_testing_overlap(DRIVE_test_imgs_original, DRIVE_test_groudTruth, Im
     test_masks = load_hdf5(DRIVE_test_groudTruth)
 
     test_imgs = my_PreProc(test_imgs_original)
-    test_masks = test_masks/255.
+    #test_masks = test_masks/255.
     #extend both images and masks so they can be divided exactly by the patches dimensions
     test_imgs = test_imgs[0:Imgs_to_test,:,:,:]
     test_masks = test_masks[0:Imgs_to_test,:,:,:]
     test_imgs = paint_border_overlap(test_imgs, patch_height, patch_width, stride_height, stride_width)
 
     #check masks are within 0-1
-    assert(np.max(test_masks)==1  and np.min(test_masks)==0)
+    #assert(np.max(test_masks)==1  and np.min(test_masks)==0)
 
     print("\ntest images shape:")
     print(test_imgs.shape)
     print("\ntest mask shape:")
     print(test_masks.shape)
     print("test images range (min-max): " +str(np.min(test_imgs)) +' - '+str(np.max(test_imgs)))
-    print("test masks are within 0-1\n")
+    #print("test masks are within 0-1\n")
 
     #extract the TEST patches from the full images
     patches_imgs_test = extract_ordered_overlap(test_imgs,patch_height,patch_width,stride_height,stride_width)
@@ -135,7 +136,8 @@ def data_consistency_check(imgs,masks):
 
 #extract patches randomly in the full training images
 #  -- Inside OR in full image
-def extract_random(full_imgs,full_masks, patch_h,patch_w, N_patches, inside=True):
+def extract_random(full_imgs,full_masks, patch_h,patch_w, N_patches, inside=False):
+    print(full_imgs.shape[0])
     if (N_patches%full_imgs.shape[0] != 0):
         print("N_patches: plase enter a multiple of 20")
         exit()
@@ -159,9 +161,6 @@ def extract_random(full_imgs,full_masks, patch_h,patch_w, N_patches, inside=True
             y_center = random.randint(0+int(patch_h/2),img_h-int(patch_h/2))
             # print "y_center " +str(y_center)
             #check whether the patch is fully contained in the FOV
-            if inside==True:
-                if is_patch_inside_FOV(x_center,y_center,img_w,img_h,patch_h)==False:
-                    continue
             patch = full_imgs[i,:,y_center-int(patch_h/2):y_center+int(patch_h/2),x_center-int(patch_w/2):x_center+int(patch_w/2)]
             patch_mask = full_masks[i,:,y_center-int(patch_h/2):y_center+int(patch_h/2),x_center-int(patch_w/2):x_center+int(patch_w/2)]
             patches[iter_tot]=patch

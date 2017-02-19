@@ -76,7 +76,7 @@ def visualize(data,filename):
 
 
 #prepare the mask in the right shape for the Unet
-def masks_Unet(masks):
+def masks_Unet(masks, N_classes=5):
     try:
         assert (len(masks.shape)==4)  #4D arrays
     except:
@@ -87,9 +87,11 @@ def masks_Unet(masks):
     assert (masks.shape[1]==1 )  #check the channel is 1
     im_h = masks.shape[2]
     im_w = masks.shape[3]
+    print(masks.shape[0])
     masks = np.reshape(masks,(masks.shape[0],im_h*im_w))
-    new_masks = np.empty((masks.shape[0],im_h*im_w,4))
+    new_masks = np.empty((masks.shape[0],im_h*im_w, N_classes))
     labels = np.unique(masks)
+    print(labels)
     labelsP = to_categorical(labels)
     l = {}
     for q, j in zip(labels, labelsP):
@@ -97,14 +99,16 @@ def masks_Unet(masks):
     
     for i in range(masks.shape[0]):
         for j in range(im_h*im_w):
+            #print(new_masks.shape)
+            #print(masks.shape)
             new_masks[i,j] = l[masks[i,j]]
     
     return new_masks
 
 
-def pred_to_imgs(pred,mode="original"):
+def pred_to_imgs(pred,mode="original", N_classes=5):
     assert (len(pred.shape)==3)  #3D array: (Npatches,height*width,6)
-    assert (pred.shape[2]==4 )  #check the classes are 6
+    assert (pred.shape[2]==N_classes )  #check the classes are correct
     pred_images = np.empty((pred.shape[0],pred.shape[1]))  #(Npatches,height*width)
     if mode=="original":
         for i in range(pred.shape[0]):
@@ -120,5 +124,5 @@ def pred_to_imgs(pred,mode="original"):
     else:
         print("mode " +str(mode) +" not recognized, it can be 'original' or 'threshold'")
         exit()
-    pred_images = np.reshape(pred_images,(pred_images.shape[0],1,384,288))
+    pred_images = np.reshape(pred_images,(10,1,384,288))
     return pred_images

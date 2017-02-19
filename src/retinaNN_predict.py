@@ -72,6 +72,8 @@ N_visual = int(config.get('testing settings', 'N_group_visual'))
 #====== average mode ===========
 average_mode = config.getboolean('testing settings', 'average_mode')
 
+N_classes = int(config.get('training settings', 'N_classes'))
+
 
 # #ground truth
 # gtruth= path_data + config.get('data paths', 'test_groundTruth')
@@ -80,38 +82,23 @@ average_mode = config.getboolean('testing settings', 'average_mode')
 # visualize(group_images(test_border_masks[0:20,:,:,:],5),'borders')#.show()
 # visualize(group_images(img_truth[0:20,:,:,:],5),'gtruth')#.show()
 
+db = DatabaseProxy(N_classes=N_classes)
+
+_, _ , patches_imgs_test, patches_masks_test = db.getTestAndTrainingData(batches=32)
 
 
 #============ Load the data and divide in patches
-patches_imgs_test = None
-new_height = None
-new_width = None
-masks_test  = None
-patches_masks_test = None
-#if average_mode == True:
-#    patches_imgs_test, new_height, new_width, masks_test = get_data_testing_overlap(
-#        DRIVE_test_imgs_original = DRIVE_test_imgs_original,  #original
-#        DRIVE_test_groudTruth = path_data + config.get('data paths', 'test_groundTruth'),  #masks
-#        Imgs_to_test = int(config.get('testing settings', 'full_images_to_test')),
-#        patch_height = patch_height,
-#        patch_width = patch_width,
-#        stride_height = stride_height,
-#        stride_width = stride_width
-#    )
-#else:
-#    patches_imgs_test, patches_masks_test = get_data_testing(
-#        DRIVE_test_imgs_original = DRIVE_test_imgs_original,  #original
-#        DRIVE_test_groudTruth = path_data + config.get('data paths', 'test_groundTruth'),  #masks
-#        Imgs_to_test = int(config.get('testing settings', 'full_images_to_test')),
-#        patch_height = patch_height,
-#        patch_width = patch_width,
-#    )
+
+patches_imgs_test, patches_masks_test = get_data_testing(
+    p_test_imgs_original = patches_imgs_test,
+    p_test_groudTruth = patches_masks_test,  #masks
+    Imgs_to_test = 10,
+    patch_height = int(config.get('data attributes', 'patch_height')),
+    patch_width = int(config.get('data attributes', 'patch_width')),
+)
 
 
-db = DatabaseProxy()
 
-#============ Load the data and divided in patches
-_, _ , patches_imgs_test, patches_masks_test = db.getTestAndTrainingData(batches=32)
 
 
 #================ Run the prediction of the patches ==================================
@@ -125,7 +112,8 @@ print("predicted images size :")
 print(predictions.shape)
 
 #===== Convert the prediction arrays in corresponding images
-pred_patches = pred_to_imgs(predictions,"original")
+print("N_classes = %d" % (N_classes))
+pred_patches = pred_to_imgs(predictions,mode="original", N_classes=N_classes)
 
 
 #========== Elaborate and visualize the predicted images ====================

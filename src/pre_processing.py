@@ -50,12 +50,11 @@ def my_PreProc(data, saveImage=False, experiment_name=None):
     sharpness = np.transpose(train_imgs[0], (1, 2, 0))
     image_stages += (sharpness,)
 
-
-    train_imgs = gray2rgb(train_imgs)
-    final = np.transpose(train_imgs[0], (1, 2, 0))
+#    train_imgs = gray2rgb(train_imgs)
+#    final = np.transpose(train_imgs[0], (1, 2, 0))
 
     if(saveImage and experiment_name):
-        all = np.hstack((np.hstack(image_stages).repeat(3,2), final))
+        all = np.hstack(image_stages).repeat(3,2)
         Image.fromarray(all.astype(np.uint8)).save(
             "./" + experiment_name + "/" + experiment_name + "_final_preprocessing.png")
 

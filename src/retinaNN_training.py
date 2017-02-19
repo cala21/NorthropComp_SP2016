@@ -29,11 +29,13 @@ from databaseProxy import DatabaseProxy
 
 # function to obtain data for training/testing (validation)
 from extract_patches import get_data_training
+from extract_patches import get_data_testing
 from pre_processing import my_PreProc
 
 
 # Define the neural network
-def get_unet(n_ch, patch_height, patch_width):
+def get_unet(n_ch, patch_height, patch_width, N_classes):
+
     inputs = Input((n_ch, patch_height, patch_width))
     conv1 = Convolution2D(32, 3, 3, activation='relu',
                           border_mode='same')(inputs)
@@ -69,9 +71,8 @@ def get_unet(n_ch, patch_height, patch_width):
     conv5 = Convolution2D(32, 3, 3, activation='relu',
                           border_mode='same')(conv5)
     #
-    conv6 = Convolution2D(4, 1, 1, activation='relu',
-                          border_mode='same')(conv5)
-    conv6 = core.Reshape((4, patch_height * patch_width))(conv6)
+    conv6 = Convolution2D(N_classes, 1, 1, activation='relu', border_mode='same')(conv5)
+    conv6 = core.Reshape((N_classes, patch_height * patch_width))(conv6)
     conv6 = core.Permute((2, 1))(conv6)
     ############
     conv7 = core.Activation('softplus')(conv6)
@@ -85,51 +86,8 @@ def get_unet(n_ch, patch_height, patch_width):
     return model
 
 
-def get_1d(n_ch, patch_height, patch_width):
-    inputs = Input((n_ch, patch_height, patch_width))
-    pad1 = ZeroPadding2D(padding=(10, 10))(inputs)
-    conv1 = Convolution1D(32, 3, activation='relu', border_mode='same')(pad1)
-    conv1 = Dropout(0.2)(conv1)
-    conv1 = Convolution1D(32, 3, activation='relu', border_mode='same')(conv1)
-    pool1 = MaxPooling1D()(conv1)
-    #
-    conv2 = Convolution1D(64, 3, activation='relu', border_mode='same')(pool1)
-    conv2 = Dropout(0.2)(conv2)
-    conv2 = Convolution2D(64, 3, activation='relu', border_mode='same')(conv2)
-    pool2 = MaxPooling1D()(conv2)
-    #
-    conv3 = Convolution1D(128, 3, activation='relu', border_mode='same')(pool2)
-    conv3 = Dropout(0.2)(conv3)
-    conv3 = Convolution1D(128, 3, activation='relu', border_mode='same')(conv3)
+def get_seq(n_ch, patch_height, patch_width, N_classes):
 
-    up1 = merge([UpSampling1D()(conv3), conv2], mode='concat', concat_axis=1)
-    conv4 = Convolution1D(64, 3, activation='relu', border_mode='same')(up1)
-    conv4 = Dropout(0.2)(conv4)
-    conv4 = Convolution1D(64, 3, activation='relu', border_mode='same')(conv4)
-    #
-    up2 = merge([UpSampling1D()(conv4), conv1], mode='concat', concat_axis=1)
-    conv5 = Convolution1D(32, 3, activation='relu', border_mode='same')(up2)
-    conv5 = Dropout(0.2)(conv5)
-    conv5 = Convolution1D(32, 3, activation='relu', border_mode='same')(conv5)
-    #
-    conv6 = Convolution1D(4, 1, activation='relu', border_mode='same')(conv5)
-    conv6 = core.Reshape((4, patch_height * patch_width))(conv6)
-    conv6 = core.Permute((2, 1))(conv6)
-    ############
-    conv7 = core.Activation('softmax')(conv6)
-
-    model = Model(input=inputs, output=conv7)
-
-    # sgd = SGD(lr=0.01, decay=1e-6, momentum=0.3, nesterov=False)
-    model.compile(optimizer='sgd', loss='categorical_crossentropy',
-                  metrics=['accuracy'])
-
-    return model
-
-
-def get_seq(n_ch, patch_height, patch_width):
-
-    num_classes = 4
     kernel = 3
     filter_size = 64
     pad = 1
@@ -180,8 +138,8 @@ def get_seq(n_ch, patch_height, patch_width):
                           border_mode='valid')(zero8)
     batch8 = BatchNormalization()(conv8)
 
-    conv9 = Convolution2D(num_classes, 1, 1, border_mode='valid')(batch8)
-    conv9 = core.Reshape((num_classes, patch_height * patch_width))(conv9)
+    conv9 = Convolution2D(N_classes, 1, 1, border_mode='valid')(batch8)
+    conv9 = core.Reshape((N_classes, patch_height * patch_width))(conv9)
     conv9 = core.Permute((2, 1))(conv9)
 
     act = core.Activation('softmax')(conv9)
@@ -197,7 +155,7 @@ def get_seq(n_ch, patch_height, patch_width):
 # Define the neural network gnet
 # you need change function call "get_unet" to "get_gnet" in line 166
 # before use this network
-def get_gnet(n_ch, patch_height, patch_width):
+def get_gnet(n_ch, patch_height, patch_width, N_classes):
     inputs = Input((n_ch, patch_height, patch_width))
     noise1 = GaussianNoise(sigma=0.3)(inputs)
     conv1 = Convolution2D(32, 3, 3, activation='relu',
@@ -261,9 +219,9 @@ def get_gnet(n_ch, patch_height, patch_width):
     conv9 = Convolution2D(32, 3, 3, activation='relu',
                           border_mode='same')(conv9)
     #
-    conv10 = Convolution2D(3, 1, 1, activation='relu',
+    conv10 = Convolution2D(N_classes, 1, 1, activation='relu',
                            border_mode='same')(conv9)
-    conv10 = core.Reshape((3, patch_height * patch_width))(conv10)
+    conv10 = core.Reshape((N_classes, patch_height * patch_width))(conv10)
     conv10 = core.Permute((2, 1))(conv10)
     ############
     conv10 = core.Activation('softmax')(conv10)
@@ -285,34 +243,43 @@ path_data = config.get('data paths', 'path_local')
 name_experiment = config.get('experiment name', 'name')
 # training settings
 N_epochs = int(config.get('training settings', 'N_epochs'))
+N_classes = int(config.get('training settings', 'N_classes'))
 batch_size = int(config.get('training settings', 'batch_size'))
 
-db = DatabaseProxy(experiment_name=name_experiment)
+db = DatabaseProxy(experiment_name=name_experiment, N_classes=N_classes)
 
 #============ Load the data and divided in patches
-patches_imgs_train, patches_masks_train, patches_imgs_test, patches_masks_test = db.getTestAndTrainingData(
+patches_imgs_testx, patches_masks_testx, patches_imgs_trainx, patches_masks_trainx = db.getTestAndTrainingData(
     batches=batch_size)
-'''
- get_data_training(
-    DRIVE_train_imgs_original = path_data + config.get('data paths',  'train_imgs_original'),
-    DRIVE_train_groudTruth = path_data + config.get('data paths', 'train_groundTruth'),  #masks
+
+patches_imgs_train,patches_masks_train = get_data_training(
+    p_train_imgs_original = patches_imgs_trainx,
+    p_train_groudTruth = patches_masks_trainx,  #masks
     patch_height = int(config.get('data attributes', 'patch_height')),
     patch_width = int(config.get('data attributes', 'patch_width')),
     N_subimgs = int(config.get('training settings', 'N_subimgs')),
-    inside_FOV = config.getboolean('training settings', 'inside_FOV') #select the patches only inside the FOV  (default == True)
+    inside_FOV = config.getboolean('training settings', 'inside_FOV'),#select the patches only inside the FOV  (default == True)
+    Experiment = name_experiment
 )
-'''
+patches_imgs_test, patches_masks_test = get_data_testing(
+    p_test_imgs_original = patches_imgs_testx,
+    p_test_groudTruth = patches_masks_testx,  #masks
+    Imgs_to_test = 10,
+    patch_height = int(config.get('data attributes', 'patch_height')),
+    patch_width = int(config.get('data attributes', 'patch_width')),
+)
+
 #========= Save a sample of what you're feeding to the neural network ====
 N_sample = min(patches_imgs_train.shape[0], 40)
-# visualize(group_images(patches_imgs_train[0:N_sample,:,:,:],5),'./'+name_experiment+'/'+"sample_input_imgs")#.show()
-# visualize(group_images(patches_masks_train[0:N_sample,:,:,:],5),'./'+name_experiment+'/'+"sample_input_masks")#.show()
+visualize(group_images(patches_imgs_train[0:N_sample,:,:,:],5),'./'+name_experiment+'/'+"sample_input_imgs")#.show()
+visualize(group_images(patches_masks_train[0:N_sample,:,:,:],5) / N_classes - 1,'./'+name_experiment+'/'+"sample_input_masks")#.show()
 
 
 #=========== Construct and save the model arcitecture =====
 n_ch = patches_imgs_train.shape[1]
 patch_height = patches_imgs_train.shape[2]
 patch_width = patches_imgs_train.shape[3]
-model = get_unet(n_ch, patch_height, patch_width)  # the U-net model
+model = get_unet(n_ch, patch_height, patch_width, N_classes)  # the U-net model
 print("Check: final output of the network:")
 print(model.output_shape)
 plot(model, to_file='./' + name_experiment + '/' +
@@ -337,7 +304,7 @@ checkpointer = ModelCheckpoint(filepath='./' + name_experiment + '/' + name_expe
 # lrate_drop = LearningRateScheduler(step_decay)
 
 patches_masks_train = masks_Unet(
-    patches_masks_train)  # reduce memory consumption#
+    patches_masks_train, N_classes=N_classes)  # reduce memory consumption#
 model.fit(patches_imgs_train, patches_masks_train, nb_epoch=N_epochs, batch_size=batch_size,
           verbose=2, shuffle=True, validation_split=0.2, callbacks=[checkpointer])
 
@@ -347,6 +314,6 @@ model.save_weights('./' + name_experiment + '/' +
                    name_experiment + '_last_weights.h5', overwrite=True)
 # test the model
 score = model.evaluate(my_PreProc(patches_imgs_test), masks_Unet(
-    patches_masks_test), verbose=0)
+    patches_masks_test, N_classes=N_classes), verbose=0)
 print('Test score:', score[0])
 print('Test accuracy:', score[1])
