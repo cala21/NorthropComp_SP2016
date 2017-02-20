@@ -106,7 +106,7 @@ def masks_Unet(masks, N_classes=5):
     return new_masks
 
 
-def pred_to_imgs(pred,mode="original", N_classes=5):
+def pred_to_imgs(pred,mode="original", N_classes=5, N_images=10):
     assert (len(pred.shape)==3)  #3D array: (Npatches,height*width,6)
     assert (pred.shape[2]==N_classes )  #check the classes are correct
     pred_images = np.empty((pred.shape[0],pred.shape[1]))  #(Npatches,height*width)
@@ -124,5 +124,5 @@ def pred_to_imgs(pred,mode="original", N_classes=5):
     else:
         print("mode " +str(mode) +" not recognized, it can be 'original' or 'threshold'")
         exit()
-    pred_images = np.reshape(pred_images,(10,1,384,288))
+    pred_images = np.reshape(pred_images,(N_images,1,384,288))
     return pred_images

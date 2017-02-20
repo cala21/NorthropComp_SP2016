@@ -130,7 +130,7 @@ def data_consistency_check(imgs,masks):
     assert(imgs.shape[0]==masks.shape[0])
     assert(imgs.shape[2]==masks.shape[2])
     assert(imgs.shape[3]==masks.shape[3])
-    assert(masks.shape[1]==1)
+    #assert(masks.shape[1]==1) # Commented this out for single image prediction. Come back to this later
     assert(imgs.shape[1]==1 or imgs.shape[1]==3)
 
 
