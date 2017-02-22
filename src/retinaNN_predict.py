@@ -161,12 +161,10 @@ y_scores, y_true = pred_patches, patches_masks_test#pred_only_FOV(pred_imgs,gtru
 
 
 
-
-
 #Confusion matrix
 y_pred = y_scores
-
-
+import ipdb
+ipdb.set_trace()
 
 
 
