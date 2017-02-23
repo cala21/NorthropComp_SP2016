@@ -313,6 +313,7 @@ def recompone(data,N_h,N_w):
         single_recon = np.empty((data.shape[1],N_h*patch_h,N_w*patch_w))
         for h in range(N_h):
             for w in range(N_w):
+                #patch = full_imgs[i,:,h*patch_h:(h*patch_h)+patch_h,w*patch_w:(w*patch_w)+patch_w]
                 single_recon[:,h*patch_h:(h*patch_h)+patch_h,w*patch_w:(w*patch_w)+patch_w]=data[s]
                 s+=1
         full_recomp[k]=single_recon

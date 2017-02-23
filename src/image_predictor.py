@@ -6,7 +6,7 @@
 
 import sys, getopt, os, configparser, ipdb
 
-from PIL import Image
+from PIL import Image, ImageOps
 
 import numpy as np
 
@@ -40,11 +40,6 @@ def classify_image(img,model):
     img = np.asarray([img])
     img = np.transpose(img, (0,3,1,2))
 
-    #true = np.asarray(truth)
-    #true = np.asarray([true])
-    #ipdb.set_trace()
-    #true = np.transpose(true, (0,3,2,1))
-
     # Split into patches
     patches_imgs_test, patches_masks_test = get_data_testing(
         p_test_imgs_original = img,
@@ -53,7 +48,6 @@ def classify_image(img,model):
         patch_height = int(config.get('data attributes', 'patch_height')),
         patch_width = int(config.get('data attributes', 'patch_width')),
     )
-
 
     # Calculate Prediction
     predictions = model.predict(patches_imgs_test, batch_size=40, verbose=2)
@@ -65,65 +59,18 @@ def classify_image(img,model):
             for k in range(qq.shape[1]):
                 q[i,j,k] = np.argmax(qq[i,j,k])
     q = q.transpose((0,3,1,2))
-    q = recompone(q,1,1)
+    
+    #q = recompone(q,1,1)
     q = q / N_classes
     q = q * 255
     pred_img = q
-    #pred_img = pred_to_imgs(predictions,mode="original", N_classes=N_classes,N_images=1)
 
-
-
-#if average_mode == True:
-#    pred_imgs = recompone_overlap(pred_patches, new_height, new_width, stride_height, stride_width)# predictions
-#    orig_imgs = my_PreProc(test_imgs_orig[0:pred_imgs.shape[0],:,:,:])    #originals
-#    gtruth_masks = masks_test  #ground truth masks
-#else:
-#    print(pred_patches.shape)
-#    pred_imgs = recompone(pred_patches,384,288)       # predictions
-#    orig_imgs = recompone(patches_imgs_test,384,288)  # originals
-#    gtruth_masks = recompone(patches_masks_test,384,288)  #masks
-## apply the DRIVE masks on the repdictions #set everything outside the FOV to zero!!
-#kill_border(pred_imgs, test_border_masks)  #DRIVE MASK  #only for visualization
-### back to original dimensions
-#orig_imgs = orig_imgs[:,:,0:full_img_height,0:full_img_width]
-#pred_imgs = pred_imgs[:,:,0:full_img_height,0:full_img_width]
-#gtruth_masks = gtruth_masks[:,:,0:full_img_height,0:full_img_width]
-#print("Orig imgs shape: " +str(orig_imgs.shape))
-#print("pred imgs shape: " +str(pred_imgs.shape))
-#print("Gtruth imgs shape: " +str(gtruth_masks.shape))
-#visualize(group_images(orig_imgs,N_visual),path_experiment+"all_originals")#.show()
-#visualize(group_images(pred_imgs,N_visual),path_experiment+"all_predictions")#.show()
-#visualize(group_images(gtruth_masks,N_visual),path_experiment+"all_groundTruths")#.show()
-##visualize results comparing mask and prediction:
-#assert (orig_imgs.shape[0]==pred_imgs.shape[0] and orig_imgs.shape[0]==gtruth_masks.shape[0])
-#N_predicted = orig_imgs.shape[0]
-#group = N_visual
-#assert (N_predicted%group==0)
-#for i in range(int(N_predicted/group)):
-#    orig_stripe = group_images(orig_imgs[i*group:(i*group)+group,:,:,:],group)
-#    masks_stripe = group_images(gtruth_masks[i*group:(i*group)+group,:,:,:],group)
-#    pred_stripe = group_images(pred_imgs[i*group:(i*group)+group,:,:,:],group)
-#    total_img = np.concatenate((orig_stripe,masks_stripe,pred_stripe),axis=0)
-#    visualize(total_img,path_experiment+name_experiment +"_Original_GroundTruth_Prediction"+str(i))#.show()
-    
-
-    # Tranform back into image
-    #pred_img = recompone(pred_img, 1, 1)
-    #patches_masks_test = recompone(patches_masks_test, 1, 1)
-    #truth = np.transpose(patches_masks_test, (0,3,2,1))
-    #truth = truth[0]
-    #truth = truth / N_classes
-    #truth = Image.fromarray((truth*255).astype(np.uint8))
-
-    #classified = np.transpose(pred_img, (0,2,3,1))
-    #classified = classified[0].repeat(3,2)
-    #classified = classified / N_classes
-    classified = group_images(pred_img,9)
+    classified = group_images(pred_img,12)
     classified = classified.transpose((1,0,2))
-    classified = visualize(classified,"classifiedImgPatches.png")
-    truth = group_images(patches_imgs_test,9)
+    classified = visualize(classified,path_experiment + "classifiedImgPatches",flippy=True)
+    truth = group_images(patches_imgs_test,12)
     truth = truth.transpose((1,0,2))
-    truth = visualize(truth,"inputImgPatches.png")
+    truth = visualize(truth, path_experiment+ "inputImgPatches", flippy=True)
 
 
     return classified, truth, original
@@ -193,8 +140,10 @@ def main():
     img.show()
     if classified:
         classified.show()
+        classified.save(path_experiment+ "classifiedImgPatches.png")
     if truth:
         truth.show()
+        truth.save(path_experiment + "inputImgPatches.png")
     if original:
         original.show()
 
