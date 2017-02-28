@@ -152,6 +152,14 @@
       -webkit-animation-duration: 1s;
       visibility: visible;
   }
+  .images:after {
+    content:".";
+    display:block;
+    height:0;
+    clear:both;
+    visibility:hidden;
+
+  }
   @keyframes slide {
     0% {
       opacity: 0;
@@ -225,8 +233,19 @@
     <button type="submit">Upload</button>
   </form>
 </div><br><br>
-<div>
+<div class="images" style="float:right; left:-50%; position:relative;">
+  <ul style="left:50%; position:relative; padding-right:10px">
   {%if image_data %}
-  <center><img src='{{image_data.image.url}}' height="320"></center>
+  <li style="float:left; list-style:none">
+      <span style="display:block">Original Image</span>
+      <img style="display:block" src='{{image_data.image.url}}' title="Original Image">
+  </li>
   {% endif %}
+  {%if classified_data %}
+  <li style="float:left; list-style:none">
+      <span style="display:block">Classified Image</span>
+      <img style="display:block" src='{{classified_data}}' title="Classified Image">
+  </li>
+  {% endif %}
+</center>
 </div>

@@ -132,5 +132,5 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 #STATIC_ROOT = "/Users/ryan/School/NorthropComp_SP2016/northrop_computing_www/static/"
 
-print 'static root: ' + STATIC_ROOT
+print('static root: ' + STATIC_ROOT)
 STATIC_URL = '/static/'
