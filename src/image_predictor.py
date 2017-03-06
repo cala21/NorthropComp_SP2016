@@ -97,7 +97,7 @@ class ImagePredictor():
         q = q.transpose((0,3,1,2))
         
         #q = recompone(q,1,1)
-        pred_img = masks_colorize(q, N_classes)
+        pred_img = masks_colorize(q, 4)
 
         classified = group_images(pred_img,12)
         classified = classified.transpose((1,0,2))
