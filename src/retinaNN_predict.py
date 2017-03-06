@@ -10,20 +10,22 @@
 import numpy as np
 import configparser
 from matplotlib import pyplot as plt
-import os 
+import os, ipdb
+from itertools import cycle
 #os.environ['KERAS_BACKEND'] = 'theano'
 #os.environ['THEANO_FLAGS']='mode=FAST_RUN,device=cpu,floatX=float32,optimizer=fast_compile'
 #Keras
 from keras.models import model_from_json
 from keras.models import Model
 #scikit learn
-from sklearn.metrics import roc_curve
+from sklearn.metrics import roc_curve, auc
 from sklearn.metrics import roc_auc_score
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import precision_recall_curve
 from sklearn.metrics import jaccard_similarity_score
 from sklearn.metrics import f1_score
 from sklearn.metrics import classification_report
+from scipy import interp
 import sys
 # help_functions.py
 from help_functions import *
@@ -40,6 +42,8 @@ from pre_processing import my_PreProc
 
 
 from databaseProxy import DatabaseProxy
+
+
 #========= CONFIG FILE TO READ FROM =======
 config = configparser.RawConfigParser()
 config.read('configuration.txt')
@@ -74,7 +78,7 @@ average_mode = config.getboolean('testing settings', 'average_mode')
 
 N_classes = int(config.get('training settings', 'N_classes'))
 
-
+CLASSESMAP = {0:"Space", 1:"Low Clouds", 2:"High Clouds", 3:"Ignore"}
 # #ground truth
 # gtruth= path_data + config.get('data paths', 'test_groundTruth')
 # img_truth= load_hdf5(gtruth)
@@ -116,61 +120,86 @@ print("N_classes = %d" % (N_classes))
 pred_patches = pred_to_imgs(predictions,mode="original", N_classes=N_classes)
 
 
-#========== Elaborate and visualize the predicted images ====================
-#pred_imgs = None
-#orig_imgs = None
-#gtruth_masks = None
-#if average_mode == True:
-#    pred_imgs = recompone_overlap(pred_patches, new_height, new_width, stride_height, stride_width)# predictions
-#    orig_imgs = my_PreProc(test_imgs_orig[0:pred_imgs.shape[0],:,:,:])    #originals
-#    gtruth_masks = masks_test  #ground truth masks
-#else:
-#    print(pred_patches.shape)
-#    pred_imgs = recompone(pred_patches,384,288)       # predictions
-#    orig_imgs = recompone(patches_imgs_test,384,288)  # originals
-#    gtruth_masks = recompone(patches_masks_test,384,288)  #masks
-## apply the DRIVE masks on the repdictions #set everything outside the FOV to zero!!
-#kill_border(pred_imgs, test_border_masks)  #DRIVE MASK  #only for visualization
-### back to original dimensions
-#orig_imgs = orig_imgs[:,:,0:full_img_height,0:full_img_width]
-#pred_imgs = pred_imgs[:,:,0:full_img_height,0:full_img_width]
-#gtruth_masks = gtruth_masks[:,:,0:full_img_height,0:full_img_width]
-#print("Orig imgs shape: " +str(orig_imgs.shape))
-#print("pred imgs shape: " +str(pred_imgs.shape))
-#print("Gtruth imgs shape: " +str(gtruth_masks.shape))
-#visualize(group_images(orig_imgs,N_visual),path_experiment+"all_originals")#.show()
-#visualize(group_images(pred_imgs,N_visual),path_experiment+"all_predictions")#.show()
-#visualize(group_images(gtruth_masks,N_visual),path_experiment+"all_groundTruths")#.show()
-##visualize results comparing mask and prediction:
-#assert (orig_imgs.shape[0]==pred_imgs.shape[0] and orig_imgs.shape[0]==gtruth_masks.shape[0])
-#N_predicted = orig_imgs.shape[0]
-#group = N_visual
-#assert (N_predicted%group==0)
-#for i in range(int(N_predicted/group)):
-#    orig_stripe = group_images(orig_imgs[i*group:(i*group)+group,:,:,:],group)
-#    masks_stripe = group_images(gtruth_masks[i*group:(i*group)+group,:,:,:],group)
-#    pred_stripe = group_images(pred_imgs[i*group:(i*group)+group,:,:,:],group)
-#    total_img = np.concatenate((orig_stripe,masks_stripe,pred_stripe),axis=0)
-#    visualize(total_img,path_experiment+name_experiment +"_Original_GroundTruth_Prediction"+str(i))#.show()
-
-
 #====== Evaluate the results
 print("\n\n========  Evaluate the results =======================")
 #predictions only inside the FOV
 y_scores, y_true = pred_patches, patches_masks_test#pred_only_FOV(pred_imgs,gtruth_masks, test_border_masks)  #returns data only inside the FOV
 
 
+y_pred = y_scores
 
 #Confusion matrix
-y_pred = y_scores
-import ipdb
-ipdb.set_trace()
-
-
-
 confusion = confusion_matrix(y_true.flatten(), y_pred.flatten())
 print(confusion)
 
+plt.matshow(confusion)
+plt.title('Confusion matrix')
+plt.colorbar()
+plt.ylabel('True label')
+plt.xlabel('Predicted label')
+plt.savefig(path_experiment+'confusion_matrix.png')
+plt.gcf().clear()
+
+from sklearn.preprocessing import label_binarize
+
+
+y_test = label_binarize(y_true.flatten(), [0,1,2,3])
+y_score = label_binarize(y_pred.flatten(), [0,1,2,3])
+
+
+fpr = dict()
+tpr = dict()
+roc_auc = dict()
+for i in range(N_classes):
+    fpr[i], tpr[i], _ = roc_curve(y_test[:, i], y_score[:, i])
+    roc_auc[i] = auc(fpr[i], tpr[i])
+
+# Compute micro-average ROC curve and ROC area
+fpr["micro"], tpr["micro"], _ = roc_curve(y_test.ravel(), y_score.ravel())
+roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
+
+all_fpr = np.unique(np.concatenate([fpr[i] for i in range(N_classes)]))
+
+# Then interpolate all ROC curves at this points
+mean_tpr = np.zeros_like(all_fpr)
+for i in range(N_classes):
+    mean_tpr += interp(all_fpr, fpr[i], tpr[i])
+
+# Finally average it and compute AUC
+mean_tpr /= N_classes
+
+fpr["macro"] = all_fpr
+tpr["macro"] = mean_tpr
+roc_auc["macro"] = auc(fpr["macro"], tpr["macro"])
+
+# Plot all ROC curves
+lw = 2
+plt.figure()
+plt.plot(fpr["micro"], tpr["micro"],
+         label='micro-average ROC curve (area = {0:0.2f})'
+               ''.format(roc_auc["micro"]),
+         color='deeppink', linestyle=':', linewidth=4)
+
+plt.plot(fpr["macro"], tpr["macro"],
+         label='macro-average ROC curve (area = {0:0.2f})'
+               ''.format(roc_auc["macro"]),
+         color='navy', linestyle=':', linewidth=4)
+
+colors = cycle(['aqua', 'darkorange', 'cornflowerblue', 'green'])
+for i, color in zip(range(N_classes), colors):
+    plt.plot(fpr[i], tpr[i], color=color, lw=lw,
+             label='ROC curve of class {0} (area = {1:0.2f})'
+             ''.format(CLASSESMAP[i], roc_auc[i]))
+
+plt.plot([0, 1], [0, 1], 'k--', lw=lw)
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Some extension of Receiver operating characteristic to multi-class')
+plt.legend(loc="lower right")
+plt.savefig(path_experiment+'ROC.png')
+plt.gcf().clear()
 classification = classification_report(y_true.flatten(),y_pred.flatten())
 print(classification)
 
