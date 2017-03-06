@@ -62,7 +62,7 @@ def group_images(data,per_row):
 
 
 #visualize image (as PIL image, NOT as matplotlib!)
-def visualize(data,filename,flippy=False):
+def visualize(data,filename,flippy=False,save=False):
     assert (len(data.shape)==3) #height*width*channels
     img = None
     if data.shape[2]==1:  #in case it is black and white
@@ -76,7 +76,8 @@ def visualize(data,filename,flippy=False):
         rotate = lambda x : x.rotate(-90, expand=True)
         flipAndRotate = lambda x: rotate(flip(x))
         img = flipAndRotate(img)
-    #img.save(filename + '.png')
+    if save:
+        img.save(filename + '.png')
     return img
 
 
@@ -110,7 +111,31 @@ def masks_Unet(masks, N_classes=5):
     
     return new_masks
 
+def masks_colorize(masks, N_classes=5):
+    try:
+        assert (len(masks.shape)==4)  #4D arrays
+    except:
+        print("Got: {}\nExpected:4".format(len(masks.shape)))
+        print(masks[1])
+        print(masks.shape)
+        raise AssertionError
+    assert (masks.shape[1]==1 )  #check the channel is 1
+    im_h = masks.shape[2]
+    im_w = masks.shape[3]
+    print(masks.shape[0])
+    masks = np.reshape(masks,(masks.shape[0],im_h*im_w))
+    new_masks = np.empty((masks.shape[0],im_h*im_w, 3))
+    if(N_classes == 4):
+        colors = {0:np.array([0,0,0]), 1:np.array([0,128,0]), 2:np.array([0,255,0]), 3:np.array([255,255,255])}
+    else:
+        colors = {0:np.array([0,0,0]), 1:np.array([0,128,0]), 2:np.array([0,255,0]), 3:np.array([255,255,255])} #TODO
 
+    for i in range(masks.shape[0]):
+        for j in range(im_h*im_w):
+            new_masks[i,j] = colors[masks[i,j]]
+    
+    return new_masks.reshape(new_masks.shape[0],  im_h, im_w,3).transpose((0,3,1,2))
+    
 def pred_to_imgs(pred,mode="original", N_classes=5, N_images=10):
     assert (len(pred.shape)==3)  #3D array: (Npatches,height*width,6)
     assert (pred.shape[2]==N_classes )  #check the classes are correct

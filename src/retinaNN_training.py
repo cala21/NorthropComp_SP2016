@@ -271,9 +271,8 @@ patches_imgs_test, patches_masks_test = get_data_testing(
 
 #========= Save a sample of what you're feeding to the neural network ====
 N_sample = min(patches_imgs_train.shape[0], 40)
-visualize(group_images(patches_imgs_train[0:N_sample,:,:,:],5),'./'+name_experiment+'/'+"sample_input_imgs")#.show()
-visualize(group_images(patches_masks_train[0:N_sample,:,:,:],5) / N_classes - 1,'./'+name_experiment+'/'+"sample_input_masks")#.show()
-
+visualize(group_images(patches_imgs_train[0:N_sample,:,:,:],5),'./'+name_experiment+'/'+"sample_input_imgs",save=True)#.show()
+visualize(group_images(masks_colorize(patches_masks_train[0:N_sample,:,:,:]),5),'./'+name_experiment+'/'+"sample_input_masks",save=True)#.show()
 
 #=========== Construct and save the model arcitecture =====
 n_ch = patches_imgs_train.shape[1]
