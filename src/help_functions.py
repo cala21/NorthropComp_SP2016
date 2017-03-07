@@ -82,7 +82,7 @@ def visualize(data,filename,flippy=False,save=False):
 
 
 #prepare the mask in the right shape for the Unet
-def masks_Unet(masks, N_classes=5):
+def masks_Unet(masks, N_classes=6):
     try:
         assert (len(masks.shape)==4)  #4D arrays
     except:
@@ -111,7 +111,7 @@ def masks_Unet(masks, N_classes=5):
     
     return new_masks
 
-def masks_colorize(masks, N_classes=5):
+def masks_colorize(masks, N_classes=6):
     try:
         assert (len(masks.shape)==4)  #4D arrays
     except:
@@ -125,10 +125,19 @@ def masks_colorize(masks, N_classes=5):
     print(masks.shape[0])
     masks = np.reshape(masks,(masks.shape[0],im_h*im_w))
     new_masks = np.empty((masks.shape[0],im_h*im_w, 3))
+    '''
+    0 – Background
+    1 – Space (Not really space, but the black area of the raw images where there is no IR data…  basically space)
+    2 – Water
+    3 – Low clouds (At least I think they’re low clouds.  They are visually distinct from the lighter “High clouds” class)
+    4 – High clouds
+    5 – Ignore
+    '''
+
     if(N_classes == 4):
         colors = {0:np.array([0,0,0]), 1:np.array([0,128,0]), 2:np.array([0,255,0]), 3:np.array([255,255,255])}
     else:
-        colors = {0:np.array([0,0,0]), 1:np.array([0,128,0]), 2:np.array([0,255,0]), 3:np.array([255,255,255])} #TODO
+        colors = {0:np.array([0,0,0]), 1:np.array([64,64,64]), 2:np.array([0,0,255]), 3:np.array([0,128,0]), 4:np.array([0,255,0]), 5:np.array([255,255,255])} 
 
     for i in range(masks.shape[0]):
         for j in range(im_h*im_w):
@@ -136,23 +145,13 @@ def masks_colorize(masks, N_classes=5):
     
     return new_masks.reshape(new_masks.shape[0],  im_h, im_w,3).transpose((0,3,1,2))
     
-def pred_to_imgs(pred,mode="original", N_classes=5, N_images=10):
+def pred_to_imgs(pred,mode="original", N_classes=6, N_images=10):
     assert (len(pred.shape)==3)  #3D array: (Npatches,height*width,6)
     assert (pred.shape[2]==N_classes )  #check the classes are correct
     pred_images = np.empty((pred.shape[0],pred.shape[1]))  #(Npatches,height*width)
-    if mode=="original":
-        for i in range(pred.shape[0]):
-            for pix in range(pred.shape[1]):
-                pred_images[i,pix]=pred[i,pix].argmax()
-    elif mode=="threshold":
-        for i in range(pred.shape[0]):
-            for pix in range(pred.shape[1]):
-                if pred[i,pix,1]>=0.5:
-                    pred_images[i,pix]=1
-                else:
-                    pred_images[i,pix]=0
-    else:
-        print("mode " +str(mode) +" not recognized, it can be 'original' or 'threshold'")
-        exit()
+    for i in range(pred.shape[0]):
+        for pix in range(pred.shape[1]):
+            pred_images[i,pix]=pred[i,pix].argmax()
+
     pred_images = np.reshape(pred_images,(N_images,1,384,288))
     return pred_images

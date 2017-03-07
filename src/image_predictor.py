@@ -87,7 +87,7 @@ class ImagePredictor():
 
         # Calculate Prediction
         predictions = self.model.predict(patches_imgs_test, batch_size=40, verbose=2)
-        qq = predictions.reshape(108,  32, 32, 4)
+        qq = predictions.reshape(108,  32, 32, self.N_classes)
         q = np.zeros((108,32,32,1))
 
         for i in range(qq.shape[0]):
@@ -97,7 +97,7 @@ class ImagePredictor():
         q = q.transpose((0,3,1,2))
         
         #q = recompone(q,1,1)
-        pred_img = masks_colorize(q, 4)
+        pred_img = masks_colorize(q, self.N_classes)
 
         classified = group_images(pred_img,12)
         classified = classified.transpose((1,0,2))

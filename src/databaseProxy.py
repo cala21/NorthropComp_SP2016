@@ -67,7 +67,7 @@ def loadImages(path_to_labeled,path_to_raw):
 
 class DatabaseProxy:
 
-    def __init__(self, raw_set = path_to_raw, labeled_set = path_to_labeled, experiment_name=None, N_classes=5):
+    def __init__(self, raw_set = path_to_raw, labeled_set = path_to_labeled, experiment_name=None, N_classes=6):
         self.path_to_labeled = labeled_set
         self.path_to_raw = raw_set
         self.experiment_name = experiment_name
@@ -146,8 +146,8 @@ class DatabaseProxy:
                 t[t == 3] = 1
                 t[t == 4] = 2
                 t[t == 255] = 3
-            elif(self.N_classes == 5):
-                t[t == 255] = 4
+            elif(self.N_classes == 6):
+                t[t == 255] = 5
 
 
             t = wrapper(t)
