@@ -10,7 +10,7 @@ test_border_masks = DRIVE_dataset_borderMasks_test.hdf5
 
 
 [experiment name]
-name = experimentWithLabelConsolidation
+name = experimentSixClasses
 
 
 [data attributes]
@@ -30,7 +30,7 @@ batch_size = 8
 #if running with nohup
 nohup = False
 #num_classes
-N_classes = 4
+N_classes = 6
 
 
 [testing settings]
