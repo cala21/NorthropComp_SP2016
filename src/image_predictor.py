@@ -66,7 +66,7 @@ class ImagePredictor():
 
         return
 
-    def classify_image(self, img):
+    def classify_image(self, img, colorize=True):
         ''' Classifies image given a model '''
         # Check img to see if truth data is avaliable
         original = self.check_dataset(img)
@@ -97,11 +97,18 @@ class ImagePredictor():
         q = q.transpose((0,3,1,2))
         
         #q = recompone(q,1,1)
-        pred_img = masks_colorize(q, self.N_classes)
+        pred_img = q
+        if colorize:
+            pred_img = masks_colorize(q, self.N_classes)
+
 
         classified = group_images(pred_img,12)
         classified = classified.transpose((1,0,2))
-        classified = visualize(classified,self.path_experiment + "classifiedImgPatches",flippy=True)
+        if colorize:
+            classified = visualize(classified,self.path_experiment + "classifiedImgPatches",flippy=True)
+        else:
+            classified = visualize(classified,self.path_experiment + "classifiedImgPatches",flippy=False)
+
         truth = group_images(patches_imgs_test,12)
         truth = truth.transpose((1,0,2))
         truth = visualize(truth, self.path_experiment+ "inputImgPatches", flippy=True)

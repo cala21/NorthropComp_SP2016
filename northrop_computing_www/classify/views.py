@@ -29,16 +29,13 @@ def index(request):
 
             global graph
             with graph.as_default():
-                classified_data, _, _=  predictor.classify_image(pilImg)
+                classified_data, _, _=  predictor.classify_image(pilImg, colorize=False)
 
-            buffer = BytesIO()
             image = classified_data
-            image.save(buffer, format="PNG")
-            img_str = "data:image/png;base64," + str(base64.b64encode(buffer.getvalue()))[2:-1]
             return render(request, 'classify/index.html', {
                 'form': form,
                 'image_data' : image_data,
-                'classified_data': img_str
+                'classified_data': np.asarray(classified_data).tolist()
             })
             #return HttpResponseRedirect('/classify/demo')
     else:
