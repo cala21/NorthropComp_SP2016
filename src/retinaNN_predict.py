@@ -78,7 +78,7 @@ average_mode = config.getboolean('testing settings', 'average_mode')
 
 N_classes = int(config.get('training settings', 'N_classes'))
 
-CLASSESMAP = {0:"Space", 1:"Low Clouds", 2:"High Clouds", 3:"Ignore"}
+CLASSESMAP = {0:"Background", 1:"Space", 2:"Water", 3:"Low Clouds", 4:"High Clouds", 5:"Ignore"}
 # #ground truth
 # gtruth= path_data + config.get('data paths', 'test_groundTruth')
 # img_truth= load_hdf5(gtruth)
@@ -132,6 +132,11 @@ y_pred = y_scores
 confusion = confusion_matrix(y_true.flatten(), y_pred.flatten())
 print(confusion)
 
+accuracy = 0
+if float(np.sum(confusion))!=0:
+    accuracy = float(sum(np.diagonal(confusion)))/float(np.sum(confusion))
+print("Global Accuracy: " +str(accuracy))
+
 plt.matshow(confusion)
 plt.title('Confusion matrix')
 plt.colorbar()
@@ -143,8 +148,14 @@ plt.gcf().clear()
 from sklearn.preprocessing import label_binarize
 
 
-y_test = label_binarize(y_true.flatten(), [0,1,2,3])
-y_score = label_binarize(y_pred.flatten(), [0,1,2,3])
+if N_classes == 4:
+    y_test = label_binarize(y_true.flatten(), [0,1,2,3])
+    y_score = label_binarize(y_pred.flatten(), [0,1,2,3])
+    colors = cycle(['aqua', 'darkorange', 'cornflowerblue', 'green'])
+else:
+    y_test = label_binarize(y_true.flatten(), [0,1,2,3,4,5])
+    y_score = label_binarize(y_pred.flatten(), [0,1,2,3,4,5])
+    colors = cycle(['aqua', 'darkorange', 'cornflowerblue', 'green', 'red', 'purple'])
 
 
 fpr = dict()
@@ -185,7 +196,6 @@ plt.plot(fpr["macro"], tpr["macro"],
                ''.format(roc_auc["macro"]),
          color='navy', linestyle=':', linewidth=4)
 
-colors = cycle(['aqua', 'darkorange', 'cornflowerblue', 'green'])
 for i, color in zip(range(N_classes), colors):
     plt.plot(fpr[i], tpr[i], color=color, lw=lw,
              label='ROC curve of class {0} (area = {1:0.2f})'
@@ -203,10 +213,6 @@ plt.gcf().clear()
 classification = classification_report(y_true.flatten(),y_pred.flatten())
 print(classification)
 
-accuracy = 0
-if float(np.sum(confusion))!=0:
-    accuracy = float(sum(np.diagonal(confusion)))/float(np.sum(confusion))
-print("Global Accuracy: " +str(accuracy))
 
 
 #Save the results

@@ -226,12 +226,13 @@
   <p>This Demo will be unbelievable</p>
 </div>
 <div>
-  <center><p>Directions: <br>upload an image to run our classifier</p></center>
+  <center><p>Directions: <br>upload an image to run our classifier</p>
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.as_p }}
     <button type="submit">Upload</button>
   </form>
+  </center>
 </div><br><br>
 <div class="images" style="float:right; left:-50%; position:relative;">
   <ul style="left:50%; position:relative; padding-right:10px">
@@ -241,11 +242,79 @@
       <img style="display:block" src='{{image_data.image.url}}' title="Original Image">
   </li>
   {% endif %}
-  {%if classified_data %}
   <li style="float:left; list-style:none">
       <span style="display:block">Classified Image</span>
-      <img style="display:block" src='{{classified_data}}' title="Classified Image">
+      <canvas id='canvas' style="display:block" title="Classified Image"></canvas>
+      <br/>
+    <form style="display:flex">
+        <div class="checkbox">
+          <label><input class="checkedBoxes" checked type="checkbox" value="0">Background</label>
+        </div>
+        <div class="checkbox">
+          <label><input class="checkedBoxes" checked type="checkbox" value="1">Space</label>
+        </div>
+        <div class="checkbox">
+          <label><input class="checkedBoxes" checked type="checkbox" value="2">Water</label>
+        </div>
+        <div class="checkbox">
+          <label><input class="checkedBoxes" checked type="checkbox" value="3">Low Clouds</label>
+        </div>
+        <div class="checkbox">
+          <label><input class="checkedBoxes" checked type="checkbox" value="4">High Clouds</label>
+        </div>
+        <div class="checkbox">
+          <label><input class="checkedBoxes" checked type="checkbox" value="5">Ignore</label>
+        </div>
+    </form>
   </li>
-  {% endif %}
 </center>
 </div>
+  <script type='text/javascript'>
+    colors = {0:[0,0,0], 1:[64,64,64], 2:[0,0,255], 3:[0,128,0], 4:[0,255,0], 5:[255,255,255]}  //IF WE WANT TO CHANGE THE COLORIZATION DO IT HERE
+  {%if classified_data %}
+    drawImage = function(img){
+        width = img.length;
+        height = img[0].length;
+        canvas = $('canvas')[0];
+        ctx = canvas.getContext('2d');
+        canvas.width = width
+        canvas.height = height
+        buffer = new Uint8ClampedArray(width * height * 4); // have enough bytes
+         var checked = [];
+            $.each($('.checkedBoxes:checkbox:checked'), function(){            
+                checked.push(parseInt($(this).val()));
+            });
+        for(var y = 0; y < height; y++) {
+            for(var x = 0; x < width; x++) {
+                var pos = (y * width + x) * 4; // position in buffer based on x and y
+                label = img[x][y];
+                if(checked.indexOf(label) >= 0)
+                    rgb = colors[label];
+                else
+                    rgb = [0,0,0] //IF WE DONT CHECK A BOX - DEFAULT TO BLACK
+                buffer[pos  ] = rgb[0];           // some R value [0, 255]
+                buffer[pos+1] = rgb[1];         // some G value
+                buffer[pos+2] = rgb[2];         // some B value
+                buffer[pos+3] = 255;
+            }
+        }
+        // create imageData object
+        var idata = ctx.createImageData(width, height);
+        idata.data.set(buffer);
+        ctx.putImageData(idata, 0, 0);
+    };
+
+    classified_data = {{classified_data}};
+    drawImage(classified_data);
+
+$(document).ready(function() {
+    //set initial state.
+    $.each($('.checkedBoxes:checkbox:checked'), function(){            
+        $(this).change(function() {
+            drawImage(classified_data);
+        });
+    });
+});
+  {% endif %}
+    
+  </script>
