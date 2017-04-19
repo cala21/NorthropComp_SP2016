@@ -52,17 +52,16 @@ The following files will be saved in the folder with same name of the experiment
 - Report on the performance
 - Classification Report
 
-##[Website](http://northropcomputing.com)
+## [Website](http://northropcomputing.com)
 
 
-##Previous Work
+## Previous Work
 This is a fork of[https://github.com/orobix/retina-unet](https://github.com/orobix/retina-unet)
 
 Most of the changes have been related to massaging our dataset into the preexisting model. 
 
 
-##License
-MIT 
+## License
 
 Copyright 2017 Joseph Marylander, Thomas Lillis, Ryan Riley, Dylan McKinney, Camilla Lambrocco, Oliver Hanna
 
