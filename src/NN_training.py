@@ -10,6 +10,10 @@
 
 import configparser
 
+from databaseProxy import DatabaseProxy
+from extract_patches import get_data_testing
+from extract_patches import get_data_training
+from help_functions import *
 from keras.callbacks import ModelCheckpoint
 from keras.layers import Input, merge, Convolution2D, MaxPooling2D, UpSampling2D, core, ZeroPadding2D
 from keras.layers.core import Dropout, Activation
@@ -17,11 +21,6 @@ from keras.layers.noise import GaussianNoise
 from keras.layers.normalization import BatchNormalization
 from keras.models import Model
 from keras.utils.visualize_util import plot
-
-from databaseProxy import DatabaseProxy
-from extract_patches import get_data_testing
-from extract_patches import get_data_training
-from help_functions import *
 from pre_processing import my_PreProc
 
 
@@ -77,6 +76,7 @@ def get_unet(n_ch, patch_height, patch_width, N_classes):
     return model
 
 
+# Define the neural network seq
 def get_seq(n_ch, patch_height, patch_width, N_classes):
     kernel = 3
     filter_size = 64
@@ -143,7 +143,7 @@ def get_seq(n_ch, patch_height, patch_width, N_classes):
 
 
 # Define the neural network gnet
-# you need change function call "get_unet" to "get_gnet" in line 166
+# you need change function call "get_unet" to "get_gnet" or "get_seq"
 # before use this network
 def get_gnet(n_ch, patch_height, patch_width, N_classes):
     inputs = Input((n_ch, patch_height, patch_width))
@@ -228,8 +228,6 @@ def get_gnet(n_ch, patch_height, patch_width, N_classes):
 # ========= Load settings from Config file
 config = configparser.RawConfigParser()
 config.read('configuration.txt')
-# patch to the datasets
-path_data = config.get('data paths', 'path_local')
 # Experiment name
 name_experiment = config.get('experiment name', 'name')
 # training settings
@@ -264,9 +262,9 @@ patches_imgs_test, patches_masks_test = get_data_testing(
 # ========= Save a sample of what you're feeding to the neural network ====
 N_sample = min(patches_imgs_train.shape[0], 40)
 visualize(group_images(patches_imgs_train[0:N_sample, :, :, :], 5), './' + name_experiment + '/' + "sample_input_imgs",
-          save=True)  # .show()
+          save=True)
 visualize(group_images(masks_colorize(patches_masks_train[0:N_sample, :, :, :]), 5),
-          './' + name_experiment + '/' + "sample_input_masks", save=True)  # .show()
+          './' + name_experiment + '/' + "sample_input_masks", save=True)
 
 # =========== Construct and save the model arcitecture =====
 n_ch = patches_imgs_train.shape[1]
@@ -285,15 +283,6 @@ open('./' + name_experiment + '/' + name_experiment +
 checkpointer = ModelCheckpoint(filepath='./' + name_experiment + '/' + name_experiment + '_best_weights.h5', verbose=1,
                                monitor='val_loss', mode='auto',
                                save_best_only=True)  # save at each epoch if the validation decreased
-
-# def step_decay(epoch):
-#     lrate = 0.01 #the initial learning rate (by default in keras)
-#     if epoch==100:
-#         return 0.005
-#     else:
-#         return lrate
-#
-# lrate_drop = LearningRateScheduler(step_decay)
 
 patches_masks_train = masks_Unet(
     patches_masks_train, N_classes=N_classes)  # reduce memory consumption#

@@ -5,17 +5,16 @@
 ##################################################
 
 
-import numpy as np
-from PIL import Image, ImageEnhance
 import cv2
-import ipdb
+from PIL import ImageEnhance
+
 from help_functions import *
 
 
 # My pre processing (use for both training and testing!)
 # AS OF 2/14/17 the best combo is PILContrast and PILSharpen
-def my_PreProc(data, saveImage=False, experiment_name=None): 
-    assert(len(data.shape) == 4)
+def my_PreProc(data, saveImage=False, experiment_name=None):
+    assert (len(data.shape) == 4)
     assert (data.shape[1] == 3)  # Use the original images
     # black-white conversion
 
@@ -26,21 +25,21 @@ def my_PreProc(data, saveImage=False, experiment_name=None):
     image_stages += (gray,)
     # my preprocessing:
 
-    #train_imgs = clahe_equalized(train_imgs)
-    #clahe = np.transpose(train_imgs[0], (1, 2, 0))
-    #image_stages += (clahe,)
+    # train_imgs = clahe_equalized(train_imgs)
+    # clahe = np.transpose(train_imgs[0], (1, 2, 0))
+    # image_stages += (clahe,)
 
-    #train_imgs = dataset_normalized(train_imgs)
-    #normalized = np.transpose(train_imgs[0], (1, 2, 0))
-    #image_stages += (normalized,)
+    # train_imgs = dataset_normalized(train_imgs)
+    # normalized = np.transpose(train_imgs[0], (1, 2, 0))
+    # image_stages += (normalized,)
 
-    #train_imgs = adjust_gamma(train_imgs, 1.2)
-    #gamma = np.transpose(train_imgs[0], (1, 2, 0))
-    #image_stages += (gamma,)
+    # train_imgs = adjust_gamma(train_imgs, 1.2)
+    # gamma = np.transpose(train_imgs[0], (1, 2, 0))
+    # image_stages += (gamma,)
 
-    #train_imgs = gaussian_edge_sharpening(train_imgs)
-    #sharpen = np.transpose(train_imgs[0], (1, 2, 0))
-    #image_stages += (sharpen,)
+    # train_imgs = gaussian_edge_sharpening(train_imgs)
+    # sharpen = np.transpose(train_imgs[0], (1, 2, 0))
+    # image_stages += (sharpen,)
 
     train_imgs = PILContrast(train_imgs, 2)
     contrast = np.transpose(train_imgs[0], (1, 2, 0))
@@ -50,59 +49,56 @@ def my_PreProc(data, saveImage=False, experiment_name=None):
     sharpness = np.transpose(train_imgs[0], (1, 2, 0))
     image_stages += (sharpness,)
 
-#    train_imgs = gray2rgb(train_imgs)
-#    final = np.transpose(train_imgs[0], (1, 2, 0))
-
-    if(saveImage and experiment_name):
-        all = np.hstack(image_stages).repeat(3,2)
+    if (saveImage and experiment_name):
+        all = np.hstack(image_stages).repeat(3, 2)
         Image.fromarray(all.astype(np.uint8)).save(
             "./" + experiment_name + "/" + experiment_name + "_final_preprocessing.png")
 
     return train_imgs
 
 
-#============================================================
-#========= PRE PROCESSING FUNCTIONS ========================#
-#============================================================
+# ============================================================
+# ========= PRE PROCESSING FUNCTIONS ========================#
+# ============================================================
 
 # PIL MODIFICATIONS
 # THESE WILL RETURN THE SAME DATA TYPE AS WAS GIVEN
 def PILSharpness(imgs, beta):
-    return np.array([sharpness(i,beta) for i in imgs])
+    return np.array([sharpness(i, beta) for i in imgs])
+
+
 def PILContrast(imgs, alpha):
-    return np.array([contrast(i,alpha) for i in imgs])
+    return np.array([contrast(i, alpha) for i in imgs])
+
 
 def contrast(image, alpha):
     imageToUse = image
-    if(type(imageToUse) == np.ndarray):
+    if (type(imageToUse) == np.ndarray):
         isArray = True
         imageToUse = OpenCV2PIL(image)
 
     enhancer = ImageEnhance.Contrast(imageToUse)
     imageToUse = enhancer.enhance(alpha)
-    if(isArray):
+    if (isArray):
         return PIL2OpenCV(imageToUse)
     return imageToUse
-        
 
 
 def sharpness(image, beta):
-    if(type(image) == np.ndarray):
+    if (type(image) == np.ndarray):
         isArray = True
         image = OpenCV2PIL(image)
     enhancer = ImageEnhance.Sharpness(image)
     image = enhancer.enhance(beta)
-    if(isArray):
+    if (isArray):
         return PIL2OpenCV(image)
     return image
-
-
 
 
 # OPENCV2 MODIFICATIONS
 
 
-#==== sharpness
+# ==== sharpness
 def gaussian_edge_sharpening(imgs):
     assert (len(imgs.shape) == 4)  # 4D arrays
     assert (imgs.shape[1] == 1)  # check the channel is 1
@@ -115,7 +111,7 @@ def gaussian_edge_sharpening(imgs):
     return imgs_sharpened
 
 
-#==== histogram equalization
+# ==== histogram equalization
 def histo_equalized(imgs):
     assert (len(imgs.shape) == 4)  # 4D arrays
     assert (imgs.shape[1] == 1)  # check the channel is 1

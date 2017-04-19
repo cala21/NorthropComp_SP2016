@@ -10,23 +10,21 @@
 import configparser
 from itertools import cycle
 
+from databaseProxy import DatabaseProxy
+from extract_patches import get_data_testing
+from help_functions import *
 from keras.models import model_from_json
 from matplotlib import pyplot as plt
 from scipy import interp
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import roc_curve, auc
-
-from databaseProxy import DatabaseProxy
-from extract_patches import get_data_testing
-from help_functions import *
+from sklearn.preprocessing import label_binarize
 
 # ========= CONFIG FILE TO READ FROM =======
 config = configparser.RawConfigParser()
 config.read('configuration.txt')
 # ===========================================
-# run the training on invariant or local
-path_data = config.get('data paths', 'path_local')
 
 # model name
 name_experiment = config.get('experiment name', 'name')
@@ -93,8 +91,6 @@ plt.ylabel('True label')
 plt.xlabel('Predicted label')
 plt.savefig(path_experiment + 'confusion_matrix.png')
 plt.gcf().clear()
-
-from sklearn.preprocessing import label_binarize
 
 if N_classes == 4:
     y_test = label_binarize(y_true.flatten(), [0, 1, 2, 3])
