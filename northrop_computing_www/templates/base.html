@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
+{% load staticfiles %}
+
 <head>
   <title>Northrop Computing Senior Project</title>
   <meta charset="utf-8">
@@ -205,7 +207,7 @@
       <ul class="nav navbar-nav navbar-right">
         <li><a href="#about">ABOUT</a></li>
         <li><a href="#demo">DEMO</a></li>
-        <li><a href="#personal">DETAILS</a></li>
+        <li><a href="#sponsor">SPONSOR</a></li>
         <li><a href="#github">GITHUB</a></li>
         <li><a href="#contact">CONTACT</a></li>
       </ul>
@@ -260,56 +262,12 @@
 
 
 <!-- Container (Personal Section) -->
-<div id="personal" class="container-fluid text-center bg-grey">
+<div id="sponsor" class="container-fluid text-center bg-grey">
 
-  <h2>Who we are</h2>
-  <div id="myCarousel" class="carousel slide text-center" data-ride="carousel">
-    <!-- Indicators -->
-    <ol class="carousel-indicators">
-      <li data-target="" data-slide-to="0" class="active"></li>
-      <li data-target="" data-slide-to="1"></li>
-      <li data-target="" data-slide-to="2"></li>
-      <li data-target="" data-slide-to="3"></li>
-      <li data-target="" data-slide-to="4"></li>
-      <li data-target="" data-slide-to="4"></li>
-    </ol>
-
-    <!-- Wrapper for slides -->
-    <div class="carousel-inner" role="listbox">
-      <div class="item active">
-        <span class="glyphicon glyphicon-user logo" style="color:black"></span>
-        <h4>Camilla Lambrocco<br><span style="font-style:normal;">Computer Science</span></h4>
-      </div>
-      <div class="item">
-        <span class="glyphicon glyphicon-user logo" style="color:black"></span>
-        <h4>Ryan Riley<br><span style="font-style:normal;">Computer Science</span></h4></div>
-      <div class="item">
-        <span class="glyphicon glyphicon-user logo" style="color:black"></span>
-        <h4>Dylan Mckinney<br><span style="font-style:normal;">Computer Science</span></h4>
-      </div>
-    <div class="item">
-      <span class="glyphicon glyphicon-user logo" style="color:black"></span>
-      <h4>Joseph Marylander<br><span style="font-style:normal;">Computer Science</span></h4>
-  </div>
-  <div class="item">
-    <span class="glyphicon glyphicon-user logo" style="color:black"></span>
-    <h4>Oliver Hanna<br><span style="font-style:normal;">Computer Science</span></h4>
-</div>
-<div class="item">
-  <span class="glyphicon glyphicon-user logo" style="color:black"></span>
-  <h4>Thomas Lillis<br><span style="font-style:normal;">Computer Science</span></h4></div>
-</div>
-
-    <!-- Left and right controls -->
-    <a class="left carousel-control" href="#myCarousel" role="button" data-slide="prev">
-      <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
-      <span class="sr-only">Previous</span>
-    </a>
-    <a class="right carousel-control" href="#myCarousel" role="button" data-slide="next">
-      <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
-      <span class="sr-only">Next</span>
-    </a>
-  </div>
+  
+  <img src="{% static 'northrop_logo.png' %}" width="800">
+  <p> We are sponsored by Northrop Grumman. Our POC is Francis Thompson.</p>
+  <br><br><center><img src="{% static 'northrop2.jpg' %}" width="800"></center>
 </div>
 
 <!-- Container (Github Section) -->
