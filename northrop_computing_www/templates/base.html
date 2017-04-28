@@ -1,14 +1,17 @@
 <!DOCTYPE html>
+{% load staticfiles %}
+
 <html lang="en">
 <head>
   <title>Northrop Computing Senior Project</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">-->
+  <link href="{% static 'bootstrap.min.css' %}" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet" type="text/css">
   <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet" type="text/css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script src="{% static 'jquery.min.js' %}"></script>
+  <script src="{% static 'bootstrap.min.js' %}"></script>
   <style>
   body {
       font: 400 15px Lato, sans-serif;
@@ -234,7 +237,7 @@
 <div class="container-fluid bg-grey">
   <div class="row">
     <div class="col-sm-4">
-      <span class="glyphicon glyphicon-globe logo slideanim"></span>
+  
     </div>
     <div class="col-sm-8">
       <h2>Overview</h2><br>
@@ -251,9 +254,9 @@
   <br>
   <div class="row slideanim">
     <div class="col-sm-12">
-      <center><a href="/classify/" class="glyphicon glyphicon-off logo-small"></a>
+      <center><a href="/classify/">Click for the demo</a>
       <h4>DEMO</h4>
-      <p>Click the link above for the demo</p>
+      <p></p>
     </div>
   </div>
 </div>
@@ -277,22 +280,22 @@
     <!-- Wrapper for slides -->
     <div class="carousel-inner" role="listbox">
       <div class="item active">
-        <span class="glyphicon glyphicon-user logo" style="color:black"></span>
+        
         <h4>Camilla Lambrocco<br><span style="font-style:normal;">Computer Science</span></h4>
       </div>
       <div class="item">
-        <span class="glyphicon glyphicon-user logo" style="color:black"></span>
+        
         <h4>Ryan Riley<br><span style="font-style:normal;">Computer Science</span></h4></div>
       <div class="item">
-        <span class="glyphicon glyphicon-user logo" style="color:black"></span>
+        
         <h4>Dylan Mckinney<br><span style="font-style:normal;">Computer Science</span></h4>
       </div>
     <div class="item">
-      <span class="glyphicon glyphicon-user logo" style="color:black"></span>
+      
       <h4>Joseph Marylander<br><span style="font-style:normal;">Computer Science</span></h4>
   </div>
   <div class="item">
-    <span class="glyphicon glyphicon-user logo" style="color:black"></span>
+    
     <h4>Oliver Hanna<br><span style="font-style:normal;">Computer Science</span></h4>
 </div>
 <div class="item">
@@ -302,11 +305,11 @@
 
     <!-- Left and right controls -->
     <a class="left carousel-control" href="#myCarousel" role="button" data-slide="prev">
-      <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+      
       <span class="sr-only">Previous</span>
     </a>
     <a class="right carousel-control" href="#myCarousel" role="button" data-slide="next">
-      <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+      <
       <span class="sr-only">Next</span>
     </a>
   </div>
@@ -357,9 +360,9 @@
   <div class="row">
     <div class="col-sm-5">
       <p>Please contact us</p>
-      <p><span class="glyphicon glyphicon-map-marker"></span> Boulder, CO</p>
-      <p><span class="glyphicon glyphicon-phone"></span> +1 7202957785</p>
-      <p><span class="glyphicon glyphicon-envelope"></span> ryan.b.riley@colorado.edu</p>
+      <p><span></span> Boulder, CO</p>
+      <p><span></span> +1 7202957785</p>
+      <p><span></span> ryan.b.riley@colorado.edu</p>
     </div>
     <div class="col-sm-7 slideanim">
       <div class="row">
