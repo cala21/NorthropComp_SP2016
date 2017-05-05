@@ -8,6 +8,7 @@ The neural network is developed with the Keras library, we refer to the [Keras r
 This code has been tested with Keras 1.1.0, using either Theano or TensorFlow as backend. In order to avoid dimensions mismatch, it is important to set `"image_dim_ordering": "th"` in the `~/.keras/keras.json` configuration file. If this file isn't there, you can create it. See the Keras documentation for more details.
 
 The following dependencies are also needed:
+- tensorflow >= 1.0
 - numpy >= 1.11.1
 - PIL >=1.1.7
 - opencv >=2.4.10
